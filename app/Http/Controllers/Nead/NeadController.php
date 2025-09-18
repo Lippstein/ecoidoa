@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Nead;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class LoginController extends Controller
+class NeadController extends Controller
 {
     /**
-     * Exibe o formulário de login.
+     * Exibe o formulário de nichos no Nead.
      */
-    public function showLoginForm()
+    public function showNiches()
     {
-        return view('auth.login', [
-            'title' => 'Área Restrita'
+        return view('nead.niches', [
+            'title' => 'Área Restrita Nead'
         ]);
     }
 
@@ -30,8 +30,6 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            // Salva o campo 'name' do usuário autenticado na sessão
-            $request->session()->put('user_name', Auth::user()->name);
             return redirect()->intended('/dashboard');
         }
 

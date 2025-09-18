@@ -25,11 +25,11 @@ class UsersDataFlex extends Model
 
     public function habitat()
     {
-        return $this->belongsTo(Habitat::class);
+        return $this->belongsTo(\App\Models\Habitat::class, 'habitat_id');
     }
 
     public function niche()
     {
-        return $this->belongsTo(Niche::class);
+        return $this->belongsTo(\App\Models\Niche::class, 'niche_id');
     }
 }

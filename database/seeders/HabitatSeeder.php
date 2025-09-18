@@ -11,7 +11,7 @@ class HabitatSeeder extends Seeder
     {
         Habitat::create([
             'habitat' => 'NEAD',
-            'habitat_data' => json_encode(["description" => "Núcleo de Educação Aberta e a Distância", "habitaturl" => "https://nead.idoa.com.br"], JSON_UNESCAPED_UNICODE),
+            'habitat_data' => json_encode(["description" => "Núcleo de Educação Aberta e a Distância", "habitaturl" => "nead"], JSON_UNESCAPED_UNICODE),
             'created_at' => now(),
         ]);
         Habitat::create([

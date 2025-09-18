@@ -9,25 +9,25 @@
         body {
             background: #f6f8fa;
         }
-        .auth-container {
-            max-width: 500px;
+        .dashboard-container {
+            max-width: 1080px;
             margin: 5rem auto;
             padding: 2.5rem 2rem;
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 2px 16px rgba(0,0,0,0.08);
         }
-        .auth-logo {
+        .dashboard-logo {
             display: block;
             margin: 0 auto 1.5rem;
             width: 100px;
             height: 100px;
         }
-        .auth-header {
+        .dashboard-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
         }
-        .auth-footer {
+        .dashboard-footer {
             text-align: center;
             margin-top: 2rem;
             font-size: 0.65em;
@@ -42,15 +42,15 @@
     </style>
 </head>
 <body>
-    <div class="auth-container">
+    <div class="dashboard-container">
         @php
             $logo = asset('images/logo_ecoidoa.png');
         @endphp
 
         @if(isset($logo))
-            <img src="{{ $logo }}" alt="Logo" class="auth-logo">
+            <img src="{{ $logo }}" alt="Logo" class="dashboard-logo">
         @endif
-        <div class="auth-header">
+        <div class="dashboard-header">
             <h2>{{ $title ?? 'Bem-vindo' }}</h2>
             @if(isset($subtitle))
                 <p>{{ $subtitle }}</p>
@@ -73,7 +73,7 @@
 
         @yield('content')
 
-        <div class="auth-footer">
+        <div class="dashboard-footer">
             &copy; {{ date('Y') }} IdoA. Todos os direitos reservados.
         </div>
     </div>

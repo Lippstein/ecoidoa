@@ -30,11 +30,48 @@ Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink
 Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
+
+Route::get('/', function () {
+    $habitats = \App\Models\Habitat::select('id','habitat','habitat_data')->get();
+    return view('index', compact('habitats')); // ou qualquer view que desejar
+});
+
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    // ...
+    // Route::post('niches', [NeadController::class, 'showNiches'])->name('show.niches');
+
+    // Route::get('/niches', function () {
+    //     $habitats = \App\Models\Habitat::select('id','habitat','habitat_data')->get();
+    //     return view('niches', compact('habitats'));
+    // });
+
+    Route::get('/welcome', function () {
+        $habitats = \App\Models\Habitat::select('id','habitat','habitat_data')->get();
+        return view('welcome', compact('habitats'));
+    });
+
+
+    // Route::get('/niches', [NicheController::class, 'show'])->name('niches.show');
+
+    Route::get('/habitats_niches', function () {
+        $habitats = \App\Models\Habitat::select('id','habitat','habitat_data')->get();
+        return view('habitats_niches', compact('habitats'));
+    })->name('habitats_niches.show');
+
+});
+
 // Rota de dashboard protegida (exemplo)
+use Illuminate\Support\Facades\Auth;
+
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $userId = Auth::user()->id;
+    $usersDataFlexList = \App\Models\UsersDataFlex::where('user_id', $userId)->get();
+    return view('dashboard', compact('usersDataFlexList'));
 })->middleware('auth')->name('dashboard');
 
 
+Route::get('/nead/{id}', [NeadController::class, 'show'])->name('nead.show');
+Route::get('/rateio/{id}', [RateioController::class, 'show'])->name('rateio.show');
 
 

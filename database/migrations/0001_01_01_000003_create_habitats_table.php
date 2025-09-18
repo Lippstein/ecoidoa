@@ -8,8 +8,8 @@ return new class extends Migration {
     {
         Schema::create('habitats', function (Blueprint $table) {
             $table->id();
-            $table->string('habitat')->collation('utf8mb4_unicode_ci');
-            $table->json('habitat_data')->collation('utf8mb4_unicode_ci')->nullable();
+            $table->string('habitat');
+            $table->json('habitat_data');
             $table->timestamp('created_at')->useCurrent();
         });
     }
