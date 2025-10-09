@@ -18,16 +18,19 @@ class UsersDataFlex extends Model
     ];
     public $timestamps = false;
 
+    // Relação com usuário
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
     }
 
+    // Relação com habitat
     public function habitat()
     {
         return $this->belongsTo(\App\Models\Habitat::class, 'habitat_id');
     }
 
+    // Relação com niche
     public function niche()
     {
         return $this->belongsTo(\App\Models\Niche::class, 'niche_id');

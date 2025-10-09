@@ -11,11 +11,13 @@
         "axios": "^1.11.0",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^2.0.0",
-        "sass": "^1.92.0",
+        "sass": "^1.93.2",
         "tailwindcss": "^4.1.12",
-        "vite": "^7.1.4"
+        "vite": "^7.1.7"
     },
     "dependencies": {
+        "@popperjs/core": "^2.11.8",
+        "bootstrap": "^5.3.8",
         "sweetalert2": "^11.23.0"
     }
 }

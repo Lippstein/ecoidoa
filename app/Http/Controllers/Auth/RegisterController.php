@@ -33,18 +33,27 @@ class RegisterController extends Controller
             'password' => ['required', 'confirmed', 'min:8'],
         ]);
 
-        // Criação do usuário
+        // Criação do usuário 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'user_data' => json_encode([]), // ou ajuste conforme necessário
+            'level' => 0, // Nível padrão para novos usuários
+            'address_data' => json_encode([]), // ou ajuste conforme necessário
+            'document_data' => json_encode([]), // ou ajuste conforme necessário
         ]);
 
         event(new Registered($user));
 
         // Autentica o usuário após o registro
         Auth::login($user);
+        // if (!session()->has('user_name')) {
+        //     $userName = Auth::user()->name; // ou outro campo, como 'username'
+        //     $userLevel = Auth::user()->level;
+        //     session(['user_name' => $userName]);
+        //     session(['user_level' => $userLevel]);
+        // }
+
 
         // Redireciona para dashboard ou onde preferir
         return redirect()->route('dashboard')->with('status', 'Conta criada com sucesso!');

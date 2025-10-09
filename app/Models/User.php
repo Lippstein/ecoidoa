@@ -22,7 +22,9 @@ class User extends Authenticatable
         'email',
         'name',
         'password',
-        'user_data',
+        'level',
+        'address_data',
+        'document_data',
         'created_at',
     ];
 
@@ -39,7 +41,8 @@ class User extends Authenticatable
      * @return array<string, string>
      */
     protected $casts = [
-        'user_data' => 'array',
+        'address_data' => 'array',
+        'document_data' => 'array',
     ];
     public $timestamps = false;
 

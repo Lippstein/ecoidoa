@@ -1,11 +1,15 @@
-@extends("layouts.auth")
+@extends("layouts.app")
 @section('title', 'Nova Conta - Idoa')
 @section('content')
 <div class="container">
-    <div class="bg-primary py-2 mb-4 rounded">
-        <h4 class="text-white text-center">Nova Conta</h4>
+    <div class="py-2 mb-4 rounded">
+        <h4 class="text-center">Cadastrar Usuário</h4>
     </div>
-    <form method="POST" action="{{ route('register') }}"  class="m-4">
+        <div class="d-flex justify-content-end gap-2 mb-3">
+        <a href="{{ route('users_list.show') }}" class="btn btn-info">Voltar para a Lista</a>
+    </div>
+
+    <form method="POST" action="{{ route('users_create.store') }}"  class="m-4">
         @csrf
         <div class="mb-3">
                 <label for="name" class="form-label">Nome:</label>
@@ -13,8 +17,7 @@
         </div>
         <div class="mb-3">
                 <label for="email" class="form-label">Email:</label>
-                <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required autofocus aria-describedby="emailHelp">
-                <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+                <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required autofocus>
         </div>
         <div class="mb-3">
             <label for="password" class="form-label">Senha:</label>
@@ -25,7 +28,7 @@
             <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
         </div>
         <div class="mb-3">
-            <button type="submit" class="btn btn-primary">Registrar-se</button>
+            <button type="submit" class="btn btn-primary">cadastrar</button>
         </div>
     </form>
 </div>

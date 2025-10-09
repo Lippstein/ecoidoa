@@ -17,10 +17,12 @@ return new class extends Migration
             $table->string('name');
             $table->string('password');
             $table->string('remember_token')->nullable();
-            $table->json('user_data')->nullable();
+            $table->unsignedTinyInteger('level')->default(0); // Campo level (0 a 9)
+            $table->json('address_data')->nullable();
+            $table->json('document_data')->nullable();
             $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
-    // Foreign key removida: relação não faz sentido e causa erro de migration
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

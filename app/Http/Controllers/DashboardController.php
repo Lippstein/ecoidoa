@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -12,12 +11,16 @@ class DashboardController extends Controller
      */
     public function dashboard()
     {
-        $userId = auth()->id();
+        $user = Auth::user();
+        if (!$user) {
+            // Redirect to login if not authenticated
+            return redirect()->route('login');
+        }
+        $userId = $user->id;
 
         $usersDataFlexList = UsersDataFlex::with(['user', 'habitat', 'niche'])
             ->where('user_id', $userId)
             ->get();
-
         return view('dashboard', compact('usersDataFlexList'));
     }
 }

@@ -31,7 +31,7 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
             // Salva o campo 'name' do usuário autenticado na sessão
-            $request->session()->put('user_name', Auth::user()->name);
+            // $request->session()->put('user_name', Auth::user()->name);
             return redirect()->intended('/dashboard');
         }
 

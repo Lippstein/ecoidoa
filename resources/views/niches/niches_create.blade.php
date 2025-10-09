@@ -1,5 +1,4 @@
-@extends('layouts.nead')
-
+@extends('layouts.app')
 @section('content')
 <div class="container">
     <h2>Nichos (Escolas)</h2>
