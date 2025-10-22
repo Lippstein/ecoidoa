@@ -8,7 +8,7 @@ return new class extends Migration {
     {
         Schema::create('niches', function (Blueprint $table) {
             $table->id();
-            $table->string('niche');
+            $table->string('niche', 100);
             $table->foreignId('habitat_id')->constrained('habitats')->onUpdate('no action')->onDelete('no action');
             $table->json('niche_data')->nullable();
             $table->timestamp('created_at')->useCurrent();

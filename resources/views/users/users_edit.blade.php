@@ -51,7 +51,7 @@
             </div>
         @endif
         <div class="py-2 mb-4 rounded">
-            <h6 class="text-center">Editar Endereço</h6>
+            <h6 class="text-center">Editar Endereço e Contatos do Usuário</h6>
             <hr style="margin:8px 0; opacity:.3;">
         </div>        
         @php
@@ -161,7 +161,7 @@
             </div>
         </div>
         <div class="py-2 mb-4 rounded">
-            <h6 class="text-center">Editar Documento</h6>
+            <h6 class="text-center">Editar Documentos do Usuário</h6>
             <hr style="margin:8px 0; opacity:.3;">
         </div>
         @php

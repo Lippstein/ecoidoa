@@ -31,10 +31,10 @@
                                 <td>
                                     <a href="{{ route('users_show.show', $user->id) }}" class="btn btn-sm btn-info">Visualizar</a>
                                     <a href="{{ route('users_edit.show', $user->id) }}" class="btn btn-sm btn-primary">Editar</a>
-                                    <form method="POST" action="{{ route('users_destroy.show', $user->id) }}" style="display:inline;">
+                                    <form method="POST" action="{{ route('users_destroy.show', [$user->id]) }}" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este usuário?');">Excluir</button>
                                     </form>
                                 </td>
                             </tr>

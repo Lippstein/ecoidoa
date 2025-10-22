@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <div class="py-2 mb-4 rounded">
-        <h4 class="text-center">Editar Habitat </h4>
+        <h4 class="text-center">Cadastrar Habitat </h4>
     </div>
     <div class="d-flex justify-content-end gap-2 mb-3">
         <a href="{{ route('habitats_list.show') }}" class="btn btn-info">Voltar para a Lista</a>

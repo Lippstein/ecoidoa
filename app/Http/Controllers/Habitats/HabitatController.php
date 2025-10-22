@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Habitats;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Habitat;
+use Exception;
 
 class HabitatController extends Controller
 {
@@ -106,4 +107,16 @@ class HabitatController extends Controller
         ]);
         return redirect()->route('habitats_list.show')->with('success', 'Habitat criado com sucesso!');
     }
+
+    public function destroyHabitatsForm(Request $request, $id)
+    {
+        try{
+            $habitat = Habitat::findOrFail($id);
+            $habitat->delete();
+            return redirect()->route('habitats_list.show')->with('status', 'Habitat excluído com sucesso.');
+        } catch (Exception $e) {
+            return redirect()->route('habitats_list.show')->with('status', 'Violação de Integridade - Habitat não excluído.');
+        }
+    }
 }
+

@@ -32,10 +32,10 @@
                                 <td>
                                     <a href="{{ route('habitats_show.show', $habitat->id) }}" class="btn btn-sm btn-info">Visualizar</a>
                                     <a href="{{ route('habitats_edit.show', $habitat->id) }}" class="btn btn-sm btn-primary">Editar</a>
-                                    <form method="POST" action="{{ route('habitats_destroy.show', $habitat->id) }}" style="display:inline;">
+                                    <form method="POST" action="{{ route('habitats_destroy.show', [$habitat->id]) }}" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este habitat?');">Excluir</button>
                                     </form>
                                 </td>
                             </tr>

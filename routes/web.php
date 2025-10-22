@@ -55,13 +55,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/habitats_niches', [UsersDataFlexController::class, 'saveHabitatsNiches'])->name('habitats_niches.save');
 
     Route::get('/users/users_list', [UserController::class, 'listUsersForm'])->name('users_list.show');
-
     Route::get('/users/users_create', [UserController::class, 'addUsersForm'])->name('users_create.show');
     Route::post('/users/users_create', [UserController::class, 'storeUsersForm'])->name('users_create.store');
     Route::get('/users/users_show/{id}', [UserController::class, 'showUsersForm'])->name('users_show.show');
     Route::get('/users/users_edit/{id}', [UserController::class, 'editUsersForm'])->name('users_edit.show');
-    Route::put('/users/users_update/{id}', [UserController::class, 'updateUsersForm'])->name('users_update.show');    
-    Route::get('/users/users_destroy/{id}', [UserController::class, 'destroyUsersForm'])->name('users_destroy.show');
+    Route::put('/users/users_update/{id}', [UserController::class, 'updateUsersForm'])->name('users_update.show');
+    Route::delete('/users/users_destroy/{id}', [UserController::class, 'destroyUsersForm'])->name('users_destroy.show');
 
     Route::get('/habitats/habitats_list', [HabitatController::class, 'listHabitatsForm'])->name('habitats_list.show');
     Route::get('/habitats/habitats_create', [HabitatController::class, 'addHabitatsForm'])->name('habitats_create.show');
@@ -69,12 +68,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/habitats/habitats_show/{id}', [HabitatController::class, 'showHabitatsForm'])->name('habitats_show.show');
     Route::get('/habitats/habitats_edit/{id}', [HabitatController::class, 'editHabitatsForm'])->name('habitats_edit.show');
     Route::put('/habitats/habitats_update/{id}', [HabitatController::class, 'updateHabitatsForm'])->name('habitats_update.show');
-    Route::get('/habitats/habitats_destroy/{id}', [HabitatController::class, 'destroyHabitatsForm'])->name('habitats_destroy.show');
-
+    Route::delete('/habitats/habitats_destroy/{id}', [HabitatController::class, 'destroyHabitatsForm'])->name('habitats_destroy.show');
 
     Route::get('/niches/niches_list', [NicheController::class, 'listNichesForm'])->name('niches_list.show');
     Route::get('/niches/niches_create', [NicheController::class, 'addNichesForm'])->name('niches_create.show');
-
+    Route::post('/niches/niches_create', [NicheController::class, 'storeNichesForm'])->name('niches_create.store');
+    Route::get('/niches/niches_show/{id}', [NicheController::class, 'showNichesForm'])->name('niches_show.show');
+    Route::get('/niches/niches_edit/{id}', [NicheController::class, 'editNichesForm'])->name('niches_edit.show');
+    Route::put('/niches/niches_update/{id}', [NicheController::class, 'updateNichesForm'])->name('niches_update.show');
+    Route::delete('/niches/niches_destroy/{id}', [NicheController::class, 'destroyNichesForm'])->name('niches_destroy.show');
 
     // Route::get('/habitats_niches', function () {
     //     $habitats = \App\Models\Habitat::select('id','habitat','habitat_data')->get();
