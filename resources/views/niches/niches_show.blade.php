@@ -200,43 +200,43 @@
            </div>
             <strong>Regra 1:</strong>
             <div>
-                {{ $rule0 }}
+                {!! nl2br(e($rule0)) !!}
             </div>
             <strong>Regra 2:</strong>
             <div>
-                {{ $rule1 }}
+                {!! nl2br(e($rule1)) !!}
             </div>
             <strong>Regra 3:</strong>
             <div>
-                {{ $rule2 }}
+                {!! nl2br(e($rule2)) !!}
             </div>
             <strong>Regra 4:</strong>
             <div>
-                {{ $rule3 }}
+                {!! nl2br(e($rule3)) !!}
             </div>
             <strong>Regra 5:</strong>
             <div>
-                {{ $rule4 }}
+                {!! nl2br(e($rule4)) !!}
             </div>
             <strong>Regra 6:</strong>
             <div>
-                {{ $rule5 }}
+                {!! nl2br(e($rule5)) !!}
             </div>
             <strong>Regra 7:</strong>
             <div>
-                {{ $rule6 }}
+                {!! nl2br(e($rule6)) !!}
             </div>
             <strong>Regra 8:</strong>
             <div>
-                {{ $rule7 }}
+                {!! nl2br(e($rule7)) !!}
             </div>
             <strong>Regra 9:</strong>
             <div>
-                {{ $rule8 }}
+                {!! nl2br(e($rule8)) !!}
             </div>
             <strong>Regra 10:</strong>
             <div>
-                {{ $rule9 }}
+                {!! nl2br(e($rule9)) !!}
             </div>
         </div>
     </div>

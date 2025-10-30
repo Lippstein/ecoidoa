@@ -47,6 +47,16 @@ class NicheSeeder extends Seeder
                     ],
           ],
             JSON_UNESCAPED_UNICODE),
+
+          'niche_params' => json_encode
+          ([
+              'level' => 'Séries Iniciais',
+              'activities' => ['activity1','activity2'],
+              'param1' => 'Ensino Fundamental',
+              'param2' => 'Ensino Médio',
+              'param3' => 'Valor do parâmetro',
+          ], JSON_UNESCAPED_UNICODE),
+
         'created_at' => now(),
         ]);
         Niche::create([

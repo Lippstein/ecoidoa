@@ -245,7 +245,7 @@
             <div class="row col mb-2">
                 <h6 class="text-center">Editar Regras do Nicho</h6>
                 <hr style="margin:8px 0; opacity:.3;">
-            </div>        
+            </div>
             <div class="row col mb-2">
                 <label for="rules" class="col-sm-2 col-form-label"><strong>Regra 1:</strong></label>
                 <div class="col">

@@ -37,6 +37,7 @@
                                     <li><a class="dropdown-item" href="{{ route('users_list.show') }}">Usuários</a></li>
                                     <li><a class="dropdown-item" href="{{ route('habitats_list.show') }}">Habitats</a></li>
                                     <li><a class="dropdown-item" href="{{ route('niches_list.show') }}">Niches</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('tesauro_list.show') }}">Tesauro</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item">

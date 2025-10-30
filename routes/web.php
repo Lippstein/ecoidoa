@@ -10,6 +10,7 @@ use App\Http\Controllers\UsersDataFlexController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Controllers\Habitats\HabitatController;
 use App\Http\Controllers\Niches\NicheController;
+use App\Http\Controllers\Terms\TesauroController;
 use App\Models\Habitat;
 
 
@@ -77,6 +78,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/niches/niches_edit/{id}', [NicheController::class, 'editNichesForm'])->name('niches_edit.show');
     Route::put('/niches/niches_update/{id}', [NicheController::class, 'updateNichesForm'])->name('niches_update.show');
     Route::delete('/niches/niches_destroy/{id}', [NicheController::class, 'destroyNichesForm'])->name('niches_destroy.show');
+
+
+    Route::get('/term/tesauro_list', [TesauroController::class, 'listTesauroForm'])->name('tesauro_list.show');
+    Route::get('/term/tesauro_filter', [TesauroController::class, 'filterTesauroForm'])->name('tesauro_filter.show');
+    Route::get('/term/term_create', [TesauroController::class, 'addTermForm'])->name('term_create.show');
+    Route::post('/term/term_create', [TesauroController::class, 'storeTermForm'])->name('term_create.store');
+
 
     // Route::get('/habitats_niches', function () {
     //     $habitats = \App\Models\Habitat::select('id','habitat','habitat_data')->get();
