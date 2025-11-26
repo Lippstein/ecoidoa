@@ -35,7 +35,6 @@ class NicheController extends Controller
      */
     public function editNichesForm($id)
     {
-        // $niche =\App\Models\Niche::with(['habitat'])->findOrFail($id)->get( );
         $niche = Niche::findOrFail($id);
         // dd($niche);
         return view('niches.niches_edit', compact('niche'));

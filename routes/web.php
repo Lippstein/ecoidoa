@@ -79,24 +79,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/niches/niches_update/{id}', [NicheController::class, 'updateNichesForm'])->name('niches_update.show');
     Route::delete('/niches/niches_destroy/{id}', [NicheController::class, 'destroyNichesForm'])->name('niches_destroy.show');
 
-
-    Route::get('/term/tesauro_list', [TesauroController::class, 'listTesauroForm'])->name('tesauro_list.show');
+    Route::match(['get', 'post'], 'term/tesauro_list', [TesauroController::class, 'listTesauroForm'])->name('tesauro_list.show');
     Route::get('/term/tesauro_filter', [TesauroController::class, 'filterTesauroForm'])->name('tesauro_filter.show');
+
+    Route::get('/term/term_edit/{niche_filter}/{id}', [TesauroController::class, 'editTermForm'])->name('term_edit.show');
+    Route::post('/term/term_edit', [TesauroController::class, 'updateTermForm'])->name('term_edit.update');
+
     Route::get('/term/term_create', [TesauroController::class, 'addTermForm'])->name('term_create.show');
     Route::post('/term/term_create', [TesauroController::class, 'storeTermForm'])->name('term_create.store');
-
-
-    // Route::get('/habitats_niches', function () {
-    //     $habitats = \App\Models\Habitat::select('id','habitat','habitat_data')->get();
-    //     return view('habitats_niches', compact('habitats'));
-    // })->name('habitats_niches.show');
-
-    // Route::post('/habitats_niches', function () {
-    //     $habitats = \App\Models\Habitat::select('id','habitat','habitat_data')->get();
-    //     return view('habitats_niches', compact('habitats'));
-    // })->name('habitats_niches.save');
-
-    // Route::get('/nead/{id}', [NeadController::class, 'show'])->name('nead.show');
-    // Route::get('/rateio/{id}', [RateioController::class, 'show'])->name('rateio.show');
+    Route::get('/term/term_creatent', [TesauroController::class, 'addTermNTForm'])->name('term_creatent.show');
+    Route::post('/term/term_creatent', [TesauroController::class, 'storeTermNTForm'])->name('term_creatent.store');
 
 });

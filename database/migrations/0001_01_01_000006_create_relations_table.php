@@ -20,6 +20,7 @@ class CreateRelationsTable extends Migration
             $table->unsignedBigInteger('id_term_nt');
             $table->unsignedBigInteger('id_niche');
             $table->unsignedBigInteger('id_user');
+            $table->unsignedBigInteger('term_order');
 
             // Constraints
             $table->foreign('id_term_bt')

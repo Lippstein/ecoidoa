@@ -16,6 +16,7 @@ class Relation extends Model
         'id_term_nt',
         'id_niche',
         'id_user',
+        'term_order',
     ];
 
     /**
