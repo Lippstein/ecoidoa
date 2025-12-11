@@ -82,12 +82,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::match(['get', 'post'], 'term/tesauro_list', [TesauroController::class, 'listTesauroForm'])->name('tesauro_list.show');
     Route::get('/term/tesauro_filter', [TesauroController::class, 'filterTesauroForm'])->name('tesauro_filter.show');
 
-    Route::get('/term/term_edit/{niche_filter}/{id}', [TesauroController::class, 'editTermForm'])->name('term_edit.show');
+    Route::get('/term/term_edit/{niche_filter}/{bt_filter}/{id}', [TesauroController::class, 'editTermForm'])->name('term_edit.show');
     Route::post('/term/term_edit', [TesauroController::class, 'updateTermForm'])->name('term_edit.update');
+
+    Route::get('/term/relation_delete', [TesauroController::class, 'deleteRelationForm'])->name('delete_relation.show');
+    Route::post('/term/relation_delete', [TesauroController::class, 'destroyRelationForm'])->name('delete_relation.destroy');
 
     Route::get('/term/term_create', [TesauroController::class, 'addTermForm'])->name('term_create.show');
     Route::post('/term/term_create', [TesauroController::class, 'storeTermForm'])->name('term_create.store');
     Route::get('/term/term_creatent', [TesauroController::class, 'addTermNTForm'])->name('term_creatent.show');
     Route::post('/term/term_creatent', [TesauroController::class, 'storeTermNTForm'])->name('term_creatent.store');
 
+    Route::get('/tesauro/{id_term_bt}/{id_niche}/filhos', [TesauroController::class, 'showChildren'])->name('tesauro.children');
+    Route::post('/tesauro/swap-order', [TesauroController::class, 'swapOrder'])->name('tesauro.swapOrder');
 });

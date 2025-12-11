@@ -36,6 +36,14 @@ class Relation extends Model
     }
 
     /**
+     * Term relation.
+     */
+    public function term()
+    {
+        return $this->belongsTo(Term::class, 'id_term_nt');
+    }
+
+    /**
      * Niche relation.
      */
     public function niche()

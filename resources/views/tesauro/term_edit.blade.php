@@ -6,12 +6,13 @@
         <h4 class="text-center">Editar Termo </h4>
     </div>
     <div class="d-flex justify-content-end gap-2 mb-3">
-        <a href="{{ route('tesauro_list.show', ['niche_filter' => request('niche_filter')]) }}" class="btn btn-info">Voltar para o Tesauro</a>
+        <a href="{{ route('tesauro_list.show', ['niche_filter' => request('niche_filter'), 'bt_filter' => request('bt_filter')]) }}" class="btn btn-info">Voltar para o Tesauro</a>
     </div>
     <form method="POST" action="{{ route('term_edit.update') }}" class="m-4">
         @csrf
         @method('POST')
         <input type="hidden" name="niche_filter" value="{{ request('niche_filter') }}">
+        <input type="hidden" name="bt_filter" value="{{ request('bt_filter') }}">
         <input type="hidden" name="id" value="{{ request('id', $term->id ?? '') }}">
         <div class="row mb-2">
             <label for="term" class="col-sm-2 col-form-label"><strong>Termo:</strong></label>
