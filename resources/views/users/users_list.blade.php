@@ -11,7 +11,18 @@
         @else
             <div class="flex items-center justify-center w-rounded">
                 <div class="d-flex justify-content-end gap-2 mb-3">
-                    <a href="{{ route('users_create.show') }}" class="btn btn-success">Novo Usuário</a>
+                    <form method="GET" action="{{ route('users_list.show') }}" class="row row-cols-lg-auto mb-2 g-2 align-items-center">
+                        @csrf
+                        <div class="col-12">
+                            <input type="text" class="form-control" name="user_filter" id="user_filter" value="{{ old('user_filter', $userFilter ?? request('user_filter')) }}" placeholder="nome, email ou cpf">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-secondary">Filtrar Usuário</button>
+                        </div>
+                        <div class="col-12">
+                            <a href="{{ route('users_create.show') }}" class="btn btn-success">Novo Usuário</a>
+                        </div>
+                    </form>
                 </div>
                <table class="table table-hover">
                     <thead>
@@ -31,6 +42,7 @@
                                 <td>
                                     <a href="{{ route('users_show.show', $user->id) }}" class="btn btn-sm btn-info">Visualizar</a>
                                     <a href="{{ route('users_edit.show', $user->id) }}" class="btn btn-sm btn-primary">Editar</a>
+                                    <a href="{{ route('usersDataFlex_list.show', $user->id) }}" class="btn btn-sm btn-primary">Perfil</a>
                                     <form method="POST" action="{{ route('users_destroy.show', [$user->id]) }}" style="display:inline;">
                                         @csrf
                                         @method('DELETE')

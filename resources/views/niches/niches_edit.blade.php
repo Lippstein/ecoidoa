@@ -32,13 +32,17 @@
                 $company_name = isset($data['company_name']) ? $data['company_name'] : 'Nome da empresa não cadastrada';
                 $trade_name = isset($data['trade_name']) ? $data['trade_name'] : 'Nome fantasia não cadastrado';
                 $foundation = isset($data['foundation']) ? $data['foundation'] : 'Fundação não cadastrada';
-                $authorization = isset($data['authorization']) ? $data['authorization'] : 'Autorização ou CNPJ não cadastrada';
+                $authorization1 = isset($data['authorization1']) ? $data['authorization1'] : 'Autorização 1 não cadastrada';
+                $authorization2 = isset($data['authorization2']) ? $data['authorization2'] : 'Autorização 2 não cadastrada';
+                $cnpj = isset($data['cnpj']) ? $data['cnpj'] : 'CNPJ não cadastrado';
                 $address = isset($data['address']) ? $data['address'] : [
                     'street' => 'Rua não cadastrada',
                     'number' => 'Número não cadastrado',
+                    'zip' => 'CEP não cadastrado',
+                    'neighborhood' => 'Bairro não cadastrado',
+                    'locality' => 'Localidade não cadastrada',
                     'city' => 'Cidade não cadastrada',
                     'state' => 'Estado não cadastrado',
-                    'zip' => 'CEP não cadastrado',
                     'country' => 'Brasil',
                     'cellphone' => 'Celular não cadastrado',
                     'phone' => 'Telefone não cadastrado',
@@ -51,9 +55,11 @@
                 ];
                 $street = $address['street'] ?? '';
                 $number = $address['number'] ?? '';
+                $zip = $address['zip'] ?? '';
+                $neighborhood = $address['neighborhood'] ?? '';
+                $locality = $address['locality'] ?? '';
                 $city = $address['city'] ?? '';
                 $state = $address['state'] ?? '';
-                $zip = $address['zip'] ?? '';
                 $country = $address['country'] ?? '';
                 $cellphone = $address['cellphone'] ?? '';
                 $phone = $address['phone'] ?? '';
@@ -64,15 +70,16 @@
                 $facebook = $address['facebook'] ?? '';
                 $instagram = $address['instagram'] ?? '';
 
-
                 if (is_string($address)) {
                     try { $address = json_decode($address, true); } catch (\Throwable $e) { $address = []; }
                 }   
                 $street = old('address.street', $street);
                 $number = old('address.number', $number);
+                $zip = old('address.zip', $zip);
+                $neighborhood = old('address.neighborhood', $neighborhood);
+                $locality = old('address.locality', $locality);
                 $city = old('address.city', $city);
                 $state = old('address.state', $state);
-                $zip = old('address.zip', $zip);
                 $country = old('address.country', $country);
                 $cellphone = old('address.cellphone', $cellphone);
                 $phone = old('address.phone', $phone);
@@ -149,9 +156,21 @@
                 </div>
             </div>
             <div class="row col mb-2">
-                <label for="authorization" class="col-sm-2 col-form-label"><strong>Autorização:</strong></label>
+                <label for="authorization1" class="col-sm-2 col-form-label"><strong>Autorização 1:</strong></label>
                 <div class="col">
-                    <input type="text" class="form-control" id="authorization" name="authorization" value="{{ old('authorization', $authorization) }}" required autofocus>
+                    <input type="text" class="form-control" id="authorization1" name="authorization1" value="{{ old('authorization1', $authorization1) }}" required autofocus>
+                </div>
+            </div>
+            <div class="row col mb-2">
+                <label for="authorization2" class="col-sm-2 col-form-label"><strong>Autorização 2:</strong></label>
+                <div class="col">
+                    <input type="text" class="form-control" id="authorization2" name="authorization2" value="{{ old('authorization2', $authorization2) }}" required autofocus>
+                </div>
+            </div>
+            <div class="row col mb-2">
+                <label for="cnpj" class="col-sm-2 col-form-label"><strong>CNPJ:</strong></label>
+                <div class="col">
+                    <input type="text" class="form-control" id="cnpj" name="cnpj" value="{{ old('cnpj', $cnpj) }}" required autofocus>
                 </div>
             </div>
             <div class="py-2 mb-4 rounded">
@@ -171,6 +190,24 @@
                 </div>
             </div>
             <div class="row col mb-2">
+                <label for="zip" class="col-sm-2 col-form-label"><strong>CEP:</strong></label>
+                <div class="col">
+                    <input type="text" class="form-control" name="address[zip]" value="{{ old('address.zip', $zip) }}" required autofocus>
+                </div>
+            </div>
+            <div class="row col mb-2">
+                <label for="neighborhood" class="col-sm-2 col-form-label"><strong>Bairro:</strong></label>
+                <div class="col">
+                    <input type="text" class="form-control" name="address[neighborhood]" value="{{ old('address.neighborhood', $neighborhood) }}" required autofocus>
+                </div>
+            </div>
+            <div class="row col mb-2">
+                <label for="locality" class="col-sm-2 col-form-label"><strong>Localidade:</strong></label>
+                <div class="col">
+                    <input type="text" class="form-control" name="address[locality]" value="{{ old('address.locality', $locality) }}" required autofocus>
+                </div>
+            </div>
+            <div class="row col mb-2">
                 <label for="city" class="col-sm-2 col-form-label"><strong>Cidade:</strong>  </label>
                 <div class="col">
                     <input type="text" class="form-control" name="address[city]" value="{{ old('address.city', $city) }}" required autofocus>
@@ -180,12 +217,6 @@
                 <label for="state" class="col-sm-2 col-form-label"><strong>Estado:</strong> </label>
                 <div class="col">
                     <input type="text" class="form-control" name="address[state]" value="{{ old('address.state', $state) }}" required autofocus>
-                </div>
-            </div>
-            <div class="row col mb-2">
-                <label for="zip" class="col-sm-2 col-form-label"><strong>CEP:</strong></label>
-                <div class="col">
-                    <input type="text" class="form-control" name="address[zip]" value="{{ old('address.zip', $zip) }}" required autofocus>
                 </div>
             </div>
             <div class="row col mb-2">

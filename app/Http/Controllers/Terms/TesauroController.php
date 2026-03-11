@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Terms;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class TesauroController extends Controller
 {
@@ -180,6 +181,78 @@ class TesauroController extends Controller
         // update using only validated data
         $termToUpdate->update($validated);
         return redirect()->route('tesauro_list.show', ['niche_filter' => $niche_filter, 'bt_filter' => $bt_filter])->with('success', 'Termo atualizado com sucesso!');
+    }
+
+
+    /**
+     * Editar documentos de um termo (lista de uploads).
+     */
+    public function editTermDocsForm($niche_filter, $bt_filter, $id)
+    {
+        $niche_filter = request()->input('niche_filter');
+        $bt_filter = request()->input('bt_filter');
+        $term = \App\Models\Term::findOrFail($id);
+        return view('tesauro.term_docs', compact('term', 'niche_filter', 'bt_filter'));
+    }
+
+    /**
+     * Atualizar documentos de um termo (upload e exclusão).
+     */
+    public function updateTermDocsForm(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer|exists:terms,id',
+            'new_doc' => 'file|mimes:pdf|max:1024' // PDF, máximo 1MB
+        ]);
+
+        $term = \App\Models\Term::findOrFail($request->input('id'));
+        $termData = $term->term_data ?? [];
+        $documents = $termData['documents'] ?? [];
+        $niche_filter = $request->input('niche_filter'); // diretório do nicho
+
+        // Adicionando novo documento PDF
+        if ($request->hasFile('new_doc')) {
+            $file = $request->file('new_doc');
+            $filename = $niche_filter . '_' . $term->id . '_' . $file->getClientOriginalName();
+            $dir = $niche_filter . '/docs';
+            if (!Storage::disk('public')->directoryExists($dir)) {
+                // Diretório NÃO existe
+                Storage::disk('public')->makeDirectory($dir);
+            }
+            $storagePath = "public/{$dir}/{$filename}";
+            // Testa se já existe o arquivo
+            if (Storage::exists($storagePath)) {
+                return back()->withErrors(['new_doc' => 'Já existe um arquivo com esse nome para este termo no nicho!']);
+            }
+            $file->storeAs($dir, $filename, 'public');
+            // $file->storeAs("public/{$dir}", $filename);
+            // debug
+            if (Storage::disk('public')->exists("{$dir}/{$filename}")) {
+                logger("O arquivo foi realmente salvo em: {$dir}/{$filename}");
+            } else {
+                logger("Falha ao salvar em: {$dir}/{$filename}");
+            }
+
+            $documents[] = $filename;
+            $termData['documents'] = $documents;
+            $term->term_data = $termData;
+            $term->save();
+            return back()->with('success', 'Documento PDF incluído com sucesso!');
+        }
+
+        // Exclusão
+        if ($request->has('action') && str_starts_with($request->input('action'), 'Excluir_')) {
+            $doc = substr($request->input('action'), strlen('Excluir_'));
+            $documents = array_filter($documents, fn($d) => $d !== $doc);
+            $termData['documents'] = array_values($documents);
+            $term->term_data = $termData;
+            $term->save();
+            $dir = $niche_filter . '/docs';
+            Storage::disk('public')->delete("{$dir}/{$doc}");
+            return back()->with('status', 'Documento excluído com sucesso!');
+        }
+
+        return back();
     }
 
     /**

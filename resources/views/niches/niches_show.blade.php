@@ -19,13 +19,17 @@
             $company_name = isset($data['company_name']) ? $data['company_name'] : 'Nome da empresa não cadastrada';
             $trade_name = isset($data['trade_name']) ? $data['trade_name'] : 'Nome fantasia não cadastrado';
             $foundation = isset($data['foundation']) ? $data['foundation'] : 'Fundação não cadastrada';
-            $authorization = isset($data['authorization']) ? $data['authorization'] : 'Autorização ou CNPJ não cadastrada';
+            $authorization1 = isset($data['authorization1']) ? $data['authorization1'] : 'Autorização 1 não cadastrada';
+            $authorization2 = isset($data['authorization2']) ? $data['authorization2'] : 'Autorização 2 não cadastrada';
+            $cnpj = isset($data['cnpj']) ? $data['cnpj'] : 'CNPJ não cadastrado';
             $address = isset($data['address']) ? $data['address'] : [
                 'street' => 'Rua não cadastrada',
                 'number' => 'Número não cadastrado',
+                'zip' => 'CEP não cadastrado',
+                'neighborhood' => 'Bairro não cadastrado',
+                'locality' => 'Localidade não cadastrada',
                 'city' => 'Cidade não cadastrada',
                 'state' => 'Estado não cadastrado',
-                'zip' => 'CEP não cadastrado',
                 'country' => 'Brasil',
                 'cellphone' => 'Celular não cadastrado',
                 'phone' => 'Telefone não cadastrado',
@@ -38,9 +42,11 @@
             ];
             $street = $address['street'] ?? '';
             $number = $address['number'] ?? '';
+            $zip = $address['zip'] ?? '';
+            $neighborhood = $address['neighborhood'] ?? '';
+            $locality = $address['locality'] ?? '';
             $city = $address['city'] ?? '';
             $state = $address['state'] ?? '';
-            $zip = $address['zip'] ?? '';
             $country = $address['country'] ?? '';
             $cellphone = $address['cellphone'] ?? '';
             $phone = $address['phone'] ?? '';
@@ -55,9 +61,11 @@
             }   
             $street = old('address.street', $street);
             $number = old('address.number', $number);
+            $zip = old('address.zip', $zip);
+            $neighborhood = old('address.neighborhood', $neighborhood);
+            $locality = old('address.locality', $locality);
             $city = old('address.city', $city);
             $state = old('address.state', $state);
-            $zip = old('address.zip', $zip);
             $country = old('address.country', $country);
             $cellphone = old('address.cellphone', $cellphone);
             $phone = old('address.phone', $phone);
@@ -130,9 +138,17 @@
             <div>
                 {{ $foundation }}
             </div>
-            <strong>Autorização:</strong>
+            <strong>Autorização 1:</strong>
             <div>
-                {{ $authorization }}
+                {{ $authorization1 }}
+            </div>
+            <strong>Autorização 2:</strong>
+            <div>
+                {{ $authorization2 }}
+            </div>
+            <strong>CNPJ:</strong>
+            <div>
+                {{ $cnpj }}
             </div>
             <div class="py-2 mb-4 rounded">
                 <h6 class="text-center">Endereço e Contatos do Nicho</h6>
@@ -146,6 +162,18 @@
             <div>
                 {{ $number }}
             </div>
+                 <strong>CEP:</strong>
+            <div>
+                {{ $zip }}
+            </div>
+            <strong>Bairro:</strong>
+            <div>
+                {{ $neighborhood }}
+            </div>
+            <strong>Localidade:</strong>
+            <div>
+                {{ $locality }}
+            </div>
             <strong>Cidade:</strong>
             <div>
                 {{ $city }}
@@ -153,10 +181,6 @@
             <strong>Estado:</strong>
             <div>
                 {{ $state }}
-            </div>
-            <strong>CEP:</strong>
-            <div>
-                {{ $zip }}
             </div>
             <strong>País:</strong>
             <div>

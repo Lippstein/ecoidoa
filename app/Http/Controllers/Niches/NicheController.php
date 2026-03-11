@@ -52,7 +52,9 @@ class NicheController extends Controller
             'company_name' => 'required|string|max:255',
             'trade_name' => 'required|string|max:100',
             'foundation' => 'nullable|string|max:100',
-            'authorization' => 'nullable|string|max:100',
+            'authorization1' => 'nullable|string|max:100',
+            'authorization2' => 'nullable|string|max:100',
+            'cnpj' => 'nullable|string|max:100',
             'address' => 'required|array|min:1',
             'address.*' => 'nullable|string|max:255',
             'rules' => 'required|array|min:1',
@@ -60,7 +62,7 @@ class NicheController extends Controller
         ]);
         // Preparar os dados para armazenar em niche_data
         $data = [];
-        $data = $request->only(['niche', 'description', 'company_name', 'trade_name', 'foundation', 'authorization', 'address', 'rules']);
+        $data = $request->only(['niche', 'description', 'company_name', 'trade_name', 'foundation', 'authorization1', 'authorization2', 'cnpj', 'address', 'rules']);
         // dd($data);
         $niche->niche_data = json_encode($data);
 
@@ -92,9 +94,11 @@ class NicheController extends Controller
             'company_name' => 'required|string|max:255',
             'trade_name'   => 'required|string|max:100',
             'foundation'   => 'nullable|string|max:100',
-            'authorization'=> 'nullable|string|max:100',
+            'authorization1'=> 'nullable|string|max:100',
+            'authorization2'=> 'nullable|string|max:100',
+            'cnpj' => 'nullable|string|max:100',
         ]);
-        $data = $request->only(['description', 'company_name', 'trade_name', 'foundation', 'authorization']);
+        $data = $request->only(['description', 'company_name', 'trade_name', 'foundation', 'authorization1', 'authorization2', 'cnpj']);
         $niche = Niche::create([
             'habitat_id' => $request->habitat_id,
             'niche' => $request->niche,

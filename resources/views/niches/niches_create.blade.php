@@ -36,7 +36,9 @@
             $company_name = isset($data['company_name']) ? $data['company_name'] : 'Nome da empresa não cadastrada';
             $trade_name = isset($data['trade_name']) ? $data['trade_name'] : 'Nome fantasia não cadastrado';
             $foundation = isset($data['foundation']) ? $data['foundation'] : 'Fundação não cadastrada';
-            $authorization = isset($data['authorization']) ? $data['authorization'] : 'Autorização ou CNPJ não cadastrada';
+            $authorization1 = isset($data['authorization1']) ? $data['authorization1'] : 'Autorização 1 não cadastrada';
+            $authorization2 = isset($data['authorization2']) ? $data['authorization2'] : 'Autorização 2 não cadastrada';
+            $cnpj = isset($data['cnpj']) ? $data['cnpj'] : 'CNPJ não cadastrado';
         @endphp
 
         <div class="row col mb-2">
@@ -64,9 +66,21 @@
             </div>
         </div>
         <div class="row mb-2">
-            <label for="authorization" class="col-sm-2 col-form-label"><strong>Autorização/CNPJ:</strong> </label>
+            <label for="authorization1" class="col-sm-2 col-form-label"><strong>Autorização 1:</strong> </label>
             <div class="col">
-                <input type="text" class="form-control" id="authorization" name="authorization" value="{{ $authorization }}" required autofocus>
+                <input type="text" class="form-control" id="authorization1" name="authorization1" value="{{ $authorization1 }}" required autofocus>
+            </div>
+        </div>
+        <div class="row mb-2">
+            <label for="authorization2" class="col-sm-2 col-form-label"><strong>Autorização 2:</strong> </label>
+            <div class="col">
+                <input type="text" class="form-control" id="authorization2" name="authorization2" value="{{ $authorization2 }}" required autofocus>
+            </div>
+        </div>
+        <div class="row mb-2">
+            <label for="cnpj" class="col-sm-2 col-form-label"><strong>CNPJ:</strong> </label>
+            <div class="col">
+                <input type="text" class="form-control" id="cnpj" name="cnpj" value="{{ $cnpj }}" required autofocus>
             </div>
         </div>
         <div class="row mb-3">

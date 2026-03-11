@@ -14,6 +14,10 @@ class Term extends Model
         'language',
     ];
 
+    protected $casts = [
+        'term_data' => 'array',
+    ];
+
     /**
      * Get all the relations where this term is the broader term (bt).
      */

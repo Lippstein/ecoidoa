@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Exception;
 
 class UserController extends Controller
@@ -13,10 +14,23 @@ class UserController extends Controller
     /**
      * Exibe a lista de usuários.
      */
-    public function listUsersForm()
+    public function listUsersForm(Request $request)
     {
-        $users = User::orderBy('name')->select('id','name','email')->paginate(10);
-        return view('users.users_list', compact('users'));
+        $userFilter = $request->input('user_filter');
+
+        $query = User::where('level', '<=', session('user_level'))
+            ->orderBy('name')
+            ->select('id', 'name', 'email');
+
+        if (!empty($userFilter)) {
+            $query->where(function ($q) use ($userFilter) {
+                $q->where('name', 'like', '%' . $userFilter . '%')
+                  ->orWhere('email', 'like', '%' . $userFilter . '%');
+            });
+        }
+        $users = $query->paginate(10);
+
+        return view('users.users_list', compact('users', 'userFilter'));
     }
 
     /**

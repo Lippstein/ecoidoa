@@ -10,11 +10,11 @@ class UsersDataFlex extends Model
         'user_id',
         'habitat_id',
         'niche_id',
-        'user_data_flex',
+        'user_profile',
         'created_at',
     ];
     protected $casts = [
-        'user_data_flex' => 'array',
+        'user_profile' => 'array',
     ];
     public $timestamps = false;
 

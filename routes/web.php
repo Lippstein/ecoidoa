@@ -6,12 +6,13 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\UsersDataFlexController;
+use App\Http\Controllers\UsersDataFlex\UsersDataFlexController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Controllers\Habitats\HabitatController;
 use App\Http\Controllers\Niches\NicheController;
 use App\Http\Controllers\Terms\TesauroController;
 use App\Models\Habitat;
+use App\Http\Controllers\PdfController;
 
 
 // Formulário de login
@@ -55,7 +56,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/habitats_niches', [UsersDataFlexController::class, 'showHabitatsNichesForm'])->name('habitats_niches.show');
     Route::post('/habitats_niches', [UsersDataFlexController::class, 'saveHabitatsNiches'])->name('habitats_niches.save');
 
-    Route::get('/users/users_list', [UserController::class, 'listUsersForm'])->name('users_list.show');
+    Route::get('/users/users_list/{user_filter?}', [UserController::class, 'listUsersForm'])->name('users_list.show');
     Route::get('/users/users_create', [UserController::class, 'addUsersForm'])->name('users_create.show');
     Route::post('/users/users_create', [UserController::class, 'storeUsersForm'])->name('users_create.store');
     Route::get('/users/users_show/{id}', [UserController::class, 'showUsersForm'])->name('users_show.show');
@@ -79,6 +80,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/niches/niches_update/{id}', [NicheController::class, 'updateNichesForm'])->name('niches_update.show');
     Route::delete('/niches/niches_destroy/{id}', [NicheController::class, 'destroyNichesForm'])->name('niches_destroy.show');
 
+    Route::get('/usersDataFlex/usersDataFlex_list/{user_id}', [UsersDataFlexController::class, 'listUsersDataFlexForm'])->name('usersDataFlex_list.show');
+    // Route::get('/usersDataFlex/usersDataFlex_create/{user_id}', [UsersDataFlexController::class, 'createUsersDataFlexForm'])->name('usersDataFlex_create.show');
+    Route::get('/usersDataFlex/usersDataFlex_show/{id}', [UsersDataFlexController::class, 'showUsersDataFlexForm'])->name('usersDataFlex_show.show');
+    Route::get('/usersDataFlex/usersDataFlex_edit/{id}', [UsersDataFlexController::class, 'editUsersDataFlexForm'])->name('usersDataFlex_edit.show');
+    Route::get('/usersDataFlex/usersDataFlex_destroy/{id}', [UsersDataFlexController::class, 'destroyUsersDataFlexForm'])->name('usersDataFlex_destroy.show');
+    Route::put('/usersDataFlex/usersDataFlex_update/{id}', [UsersDataFlexController::class, 'updateUsersDataFlexForm'])->name('usersDataFlex_update.show');
+    Route::get('/pdf_historico/{id}/{nivelEnsino}', [PdfController::class, 'historico'])->name('pdf.historico');
+
     Route::match(['get', 'post'], 'term/tesauro_list', [TesauroController::class, 'listTesauroForm'])->name('tesauro_list.show');
     Route::get('/term/tesauro_filter', [TesauroController::class, 'filterTesauroForm'])->name('tesauro_filter.show');
 
@@ -95,4 +104,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/tesauro/{id_term_bt}/{id_niche}/filhos', [TesauroController::class, 'showChildren'])->name('tesauro.children');
     Route::post('/tesauro/swap-order', [TesauroController::class, 'swapOrder'])->name('tesauro.swapOrder');
+
+    Route::get('/term/term_docs/{niche_filter}/{bt_filter}/{id}', [TesauroController::class, 'editTermDocsForm'])->name('term_docs.show');
+    Route::post('/term/term_docs', [TesauroController::class, 'updateTermDocsForm'])->name('term_docs.update');
 });

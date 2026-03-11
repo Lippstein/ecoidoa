@@ -129,6 +129,11 @@
                                    'bt_filter' => $bt_filter, 
                                           'id' => $filho['id_term_nt']
                                 ]);
+                            $docsUrl = route('term_docs.show', [
+                                'niche_filter' => $niche_filter, 
+                                   'bt_filter' => $bt_filter, 
+                                          'id' => $filho['id_term_nt']
+                                ]);
                             $insTermUrl = route('term_create.show', [
                                 'niche_filter' => $niche_filter, 
                                   'id_term_bt' => $filho['id_term_nt'], 
@@ -166,6 +171,7 @@
                             echo '            <a href="' . $insNTUrl . '" class="link-opacity-75-hover">Incluir (NT)</a>';
                             echo '            <a href="' . $delNTUrl . '" class="link-opacity-75-hover">Excluir (NT)</a>';
                             echo '            <a href="' . route('tesauro.children', ['id_term_bt' => $id_termo_nt, 'id_niche' => $niche_filter, 'niche_filter' => $niche_filter, 'bt_filter' => $bt_filter]) . '" class="link-opacity-75-hover">Ordenar</a>';
+                            echo '            <a href="' . $docsUrl . '" class="link-opacity-75-hover">Documentos</a>';
                             echo '        </div>';
                             echo '    </div>';
                             echo '</div>';
