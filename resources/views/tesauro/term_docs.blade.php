@@ -50,7 +50,7 @@
                         <li>Nenhum documento incluído.</li>
                     @else
                         @foreach($docs as $doc)
-                            <li><a href="{{ asset('storage/' . $dir . '/' . $doc) }}" target="_blank">{{ $doc }}</a><br>
+                            <li><button class="btn btn-info btn-sm"><a href="{{ asset('storage/' . $dir . '/' . $doc) }}" target="_blank">{{ $doc }}</a></button>
                                 <button type="submit" name="action" value="Excluir_{{ $doc }}" class="btn btn-danger btn-sm">(-) Excluir {{ $doc }}</button>
                             </li>
                         @endforeach

@@ -12,6 +12,7 @@ class Term extends Model
         'term',
         'definition',
         'language',
+        'id_niche',
     ];
 
     protected $casts = [

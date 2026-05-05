@@ -44,6 +44,7 @@ class User extends Authenticatable
         'address_data' => 'array',
         'document_data' => 'array',
     ];
+
     public $timestamps = false;
 
     public function usersDataFlex()

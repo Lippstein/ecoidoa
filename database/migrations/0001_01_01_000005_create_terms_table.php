@@ -18,6 +18,7 @@ class CreateTermsTable extends Migration
             $table->string('term', 255);
             $table->text('definition')->nullable();
             $table->string('language', 10)->default('pt_BR');
+            $table->unsignedBigInteger('id_niche');
             $table->timestamps(); // Cria os campos created_at e updated_at
         });
     }

@@ -70,7 +70,7 @@ class HabitatController extends Controller
         ]);
 
         $data = $request->only(['habitat', 'description', 'habitat_url', 'habitat_owner', 'email_owner']);
-        $habitat->habitat_data = json_encode($data);
+        $habitat->habitat_data = $data;
 
         // $habitat->update($validated);
         $habitat->update($request->all());
@@ -97,13 +97,14 @@ class HabitatController extends Controller
             'habitat_url'  => 'required|url|max:255',
             'habitat_owner'=> 'required|string|max:255',
             'email_owner'  => 'required|string|email|max:255',
+            'habitat_data' => 'nullable|array',
+
         ]);
         $data = $request->only(['description', 'habitat_url', 'habitat_owner', 'email_owner']);
-        //$data['habitat_data'] = json_encode($data);
         // Criação do habitat
         $habitat = Habitat::create([
             'habitat' => $request->habitat,
-            'habitat_data' => json_encode($data),
+            'habitat_data' => $data,
         ]);
         return redirect()->route('habitats_list.show')->with('success', 'Habitat criado com sucesso!');
     }

@@ -4,6 +4,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class TesauroController extends Controller
 {
@@ -29,8 +30,13 @@ class TesauroController extends Controller
             })
             ->paginate(1000);
         }
+        // dd($tesauro);
     // Listar todos os campos da tabela relations
-    $relations = \App\Models\Relation::orderBy('term_order')->get()->toArray();
+    $relations = \App\Models\Relation::where('id_niche', $niche_filter)
+        ->orderBy('term_order')
+        ->get()
+        ->toArray();
+    
     return view('tesauro.tesauro_list', compact('tesauro', 'niches', 'niche_filter', 'bt_filter', 'relations', 'id_term_bt', 'term_order'));
     }
 
@@ -44,6 +50,7 @@ class TesauroController extends Controller
         $id_term_bt = request()->input('id_term_bt');
         $name_term_bt = request()->input('name_term_bt');
         $term_order = request()->input('term_order');
+        // dd($niche_filter, $bt_filter, $id_term_bt, $name_term_bt, $term_order);
         return view('tesauro.term_create', compact('niche_filter', 'bt_filter', 'id_term_bt', 'name_term_bt', 'term_order'));
     }
 
@@ -52,11 +59,19 @@ class TesauroController extends Controller
      */
     public function storeTermForm(Request $request)
     {
+        $nicheId = $request->input('niche_filter');
+        $soTermo = $request->input('soTermo');
         $validated = $request->validate([
-                    'term' => 'required|string|max:255|unique:terms,term',
-              'definition' => 'nullable|string',
-                'language' => 'nullable|string|max:10',
+            'term' => [
+                'required',
+                'string',
+                'max:255',
+                    Rule::unique('terms', 'term')->where('id_niche', $nicheId),
+            ],
+            'definition' => 'nullable|string',
+            'language' => 'nullable|string|max:10',
         ]);
+        $validated['id_niche'] = $nicheId;
 
         $term = \App\Models\Term::create($validated);
         // termo recem criado
@@ -68,6 +83,9 @@ class TesauroController extends Controller
         $niche_filter = $request->input('niche_filter'); 
         $bt_filter = $request->input('bt_filter'); 
 
+        if($soTermo === 'soTermo') {
+            return redirect()->route('tesauro_list.show', ['niche_filter' => $niche_filter, 'bt_filter' => $bt_filter])->with('success', 'Termo cadastrado com sucesso!');
+        }
         // Criar a relação BT se id_term_bt for fornecido
         if (!empty($id_term_bt)) {
             if (empty($nicheId)) {
@@ -100,12 +118,17 @@ class TesauroController extends Controller
         $id_term_bt = request()->input('id_term_bt');
         $name_term_bt = request()->input('name_term_bt');
         $term_order = request()->input('term_order');
-        $terms = \App\Models\Term::orderBy('term')->get();
+        $terms = \App\Models\Term::where('id_niche', $niche_filter)
+            ->whereNotIn('id', \App\Models\Relation::where('id_niche', $niche_filter)->pluck('id_term_nt'))
+            ->orderBy('term')
+            ->get();
         return view('tesauro.term_creatent', compact('niche_filter', 'bt_filter', 'id_term_bt', 'name_term_bt', 'term_order', 'terms'));
     }
 
-     /**
-     * Salva um novo termo no Tesauro.
+
+
+    /**
+     * Salva um novo termo e relação no Tesauro.
      */
     public function storeTermNTForm(Request $request)
     {
@@ -122,6 +145,9 @@ class TesauroController extends Controller
         $userId = Auth::id();
         $term_order = $validated['term_order'] ?? $request->input('term_order');
         $niche_filter = $nicheId;
+        $bt_filter = $request->input('bt_filter');
+
+        // dd($id_term_nt, $id_term_bt, $nicheId, $term_order);
 
         // Criar a relação BT se id_term_bt for fornecido
         if (!empty($id_term_bt)) {
@@ -146,6 +172,7 @@ class TesauroController extends Controller
             ]);
         }
         return redirect()->route('tesauro_list.show', ['niche_filter' => $niche_filter, 'bt_filter' => $bt_filter])->with('success', 'Relação (NT) cadastrada com sucesso!');
+        // return redirect()->route('term_creatent.show', ['niche_filter' => $niche_filter, 'bt_filter' => $bt_filter, 'id_term_bt' => $id_term_bt])->with('success', 'Relação (NT) cadastrada com sucesso!');
     }
 
     /**
@@ -183,7 +210,6 @@ class TesauroController extends Controller
         return redirect()->route('tesauro_list.show', ['niche_filter' => $niche_filter, 'bt_filter' => $bt_filter])->with('success', 'Termo atualizado com sucesso!');
     }
 
-
     /**
      * Editar documentos de um termo (lista de uploads).
      */
@@ -196,7 +222,7 @@ class TesauroController extends Controller
     }
 
     /**
-     * Atualizar documentos de um termo (upload e exclusão).
+     * Atualizar docs de um termo (upload e exclusão).
      */
     public function updateTermDocsForm(Request $request)
     {
@@ -215,18 +241,22 @@ class TesauroController extends Controller
             $file = $request->file('new_doc');
             $filename = $niche_filter . '_' . $term->id . '_' . $file->getClientOriginalName();
             $dir = $niche_filter . '/docs';
-            if (!Storage::disk('public')->directoryExists($dir)) {
+            if (!Storage::disk('public')->exists($dir)) {
                 // Diretório NÃO existe
                 Storage::disk('public')->makeDirectory($dir);
             }
             $storagePath = "public/{$dir}/{$filename}";
-            // Testa se já existe o arquivo
-            if (Storage::exists($storagePath)) {
-                return back()->withErrors(['new_doc' => 'Já existe um arquivo com esse nome para este termo no nicho!']);
+    
+            $relativePath = "{$dir}/{$filename}";
+
+            // Testa se já existe o arquivo no disco public
+            if (Storage::disk('public')->exists($relativePath)) {
+                return back()->withErrors([
+                    'new_doc' => 'Já existe um arquivo com esse nome para este termo no nicho!'
+                ]);
             }
+
             $file->storeAs($dir, $filename, 'public');
-            // $file->storeAs("public/{$dir}", $filename);
-            // debug
             if (Storage::disk('public')->exists("{$dir}/{$filename}")) {
                 logger("O arquivo foi realmente salvo em: {$dir}/{$filename}");
             } else {
@@ -256,6 +286,185 @@ class TesauroController extends Controller
     }
 
     /**
+     * Editar questões de um termo (lista de questões).
+     */
+    public function editTermQuestionsForm($niche_filter, $bt_filter, $id)
+    {
+        $niche_filter = request()->input('niche_filter');
+        $bt_filter = request()->input('bt_filter');
+        $term = \App\Models\Term::findOrFail($id);
+        return view('tesauro.term_questions', compact('term', 'niche_filter', 'bt_filter'));
+    }
+
+    /**
+     * Atualizar questões de um termo.
+     */
+    public function updateTermQuestionsForm(Request $request)
+    {
+        // $request->validate([
+        //     'question_type' => 'string|in:multiple_choice,open_ended',
+        //     'statement' => 'string',
+        //     'alternative_1' => 'string',
+        //     'expl_alt_1' => 'string',
+        //     'alternative_2' => 'string',
+        //     'expl_alt_2' => 'string',
+        //     'alternative_3' => 'string',
+        //     'expl_alt_3' => 'string',
+        //     'alternative_4' => 'string',
+        //     'expl_alt_4' => 'string',
+        //     'correct_option' => 'string',
+        //     // 'language' => 'string|in:pt_BR,en_US',
+        //     // 'date' => 'date',
+        //     'answers' => 'integer',
+        //     'hits' => 'integer',
+        //     'userId' => 'integer',
+        // ]);
+
+        // $termId = $request->input('term_id');
+        // $term = \App\Models\Term::findOrFail($termId);
+        // $niche_filter = $request->input('niche_filter');
+        // $bt_filter = $request->input('bt_filter');
+        // $nextTerm = $request->input('nextTerm'); // nome do próximo termo para redirecionar após salvar
+
+        // $termDataToUpdate = $term->term_data ?? [];
+        // // $documents = $termDataToUpdate['documents'] ?? [];
+
+        // $termDataToUpdate['question_type'] = $request->input('question_type');
+        // $termDataToUpdate['statement'] = $request->input('statement');
+        // $termDataToUpdate['alternative_1'] = $request->input('alternative_1');
+        // $termDataToUpdate['expl_alt_1'] = $request->input('expl_alt_1');
+        // $termDataToUpdate['alternative_2'] = $request->input('alternative_2');
+        // $termDataToUpdate['expl_alt_2'] = $request->input('expl_alt_2');
+        // $termDataToUpdate['alternative_3'] = $request->input('alternative_3');
+        // $termDataToUpdate['expl_alt_3'] = $request->input('expl_alt_3');
+        // $termDataToUpdate['alternative_4'] = $request->input('alternative_4');
+        // $termDataToUpdate['expl_alt_4'] = $request->input('expl_alt_4');
+        // $termDataToUpdate['correct_option'] = $request->input('correct_option');
+        // $term->term_data = $termDataToUpdate;
+
+        // // update using only validated data
+        // $termDataToUpdate->update($validated);
+        // return redirect()->route('tesauro_list.show', ['niche_filter' => $niche_filter, 'bt_filter' => $bt_filter])->with('success', 'Termo atualizado com sucesso!');
+
+
+
+
+        // $term->save();
+
+        // return back();
+    }
+
+    /**
+     * Salva um novo termo e relação no Tesauro.
+     */
+    public function storeTermQuestionForm(Request $request)
+    {
+        // $term_id vai ser o bt do termo a ser criado;
+        $id_term_bt = $request->input('term_id');
+        $id_niche = $request->input('niche_filter');
+        $bt_filter = $request->input('bt_filter');
+        $nextTermName=$request->input('nextTermName'); // nome do próximo termo para redirecionar após salvar
+        $term_order = $request->input('term_order');
+        $userId = Auth::id();
+
+        $validated = $request->validate([
+            'nextTermName' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('terms', 'term')->where('id_niche', $id_niche),
+            ],
+            'question_type' => ['required','string', 'in:Resposta_Unica,Resposta_Multipla,Afirmacao_Incompleta,Foco_Negativo,Assercao_Razao,Associacao_Correspondencia,Lacuna_Completar,Ordenacao_Seriacao,Interpretacao'],
+            'statement' => ['required','string', 'max:2048'],
+            'alternative_1' => ['required','string', 'max:512'],
+            'expl_alt_1' => ['required','string', 'max:512'],
+            'alternative_2' => ['required','string', 'max:512'],
+            'expl_alt_2' => ['required','string', 'max:512'],
+            'alternative_3' => ['required','string', 'max:512'],
+            'expl_alt_3' => ['required','string', 'max:512'],
+            'alternative_4' => ['required','string', 'max:512'],
+            'expl_alt_4' => ['required','string', 'max:512'],
+            'correct_option' => ['required','string', 'max:1'],
+            'answers' => ['required','integer', 'min:3'],
+            'hits' => ['required','integer', 'min:1'], 
+            ]);
+
+        // O termo da tabela terms vem do nextTermName enviado pelo form.
+        $validated['term'] = $validated['nextTermName'];
+        $validated['id_niche'] = $id_niche ?? $request->input('niche_filter');
+        $validated['definition'] = 'Questão '.substr($nextTermName, -2).' do termo BT '.$id_term_bt;
+
+        $documents = []; // inicia vazio, pois a questão não tem docs];
+        $questionData = [
+            'question_type' => $validated['question_type'] ?? '',
+            'statement' => $validated['statement'] ?? '',
+            'alternative_1' => $validated['alternative_1'] ?? '',
+            'expl_alt_1' => $validated['expl_alt_1'] ?? '',
+            'alternative_2' => $validated['alternative_2'] ?? '',
+            'expl_alt_2' => $validated['expl_alt_2'] ?? '',
+            'alternative_3' => $validated['alternative_3'] ?? '',
+            'expl_alt_3' => $validated['expl_alt_3'] ?? '',
+            'alternative_4' => $validated['alternative_4'] ?? '',
+            'expl_alt_4' => $validated['expl_alt_4'] ?? '',
+            'correct_option' => $validated['correct_option'] ?? '',
+            'answers' => (int)($validated['answers'] ?? 0),
+            'hits' => (int)($validated['hits'] ?? 0),
+        ];
+
+        $term = \App\Models\Term::create($validated);
+        $term->term_data = [
+            'documents' => $documents,
+            'questions' => [$questionData],
+        ];
+        $term->save();
+        // id_term_nt recebe o id do termo recem criado
+        $id_term_nt = $term->id;
+
+        // dd($id_term_nt);
+
+        // Criar a relação BT se id_term_bt for fornecido
+        if (!empty($id_term_bt)) {
+            if (empty($id_niche)) {
+                return back()->withErrors(['niche_filter' => 'Selecione um nicho antes de cadastrar.']);
+            }
+            // Verifica duplicidade
+            $exists = \App\Models\Relation::where('id_term_nt', $id_term_nt)
+                ->where('id_term_bt', $id_term_bt)
+                ->where('id_niche', $id_niche)
+                ->where('id_user', $userId)
+                ->exists();
+            if ($exists) {
+                return back()->withErrors(['relation' => 'Já existe uma relação com estes dados.']);
+            }
+            \App\Models\Relation::create([
+                'id_term_nt' => $id_term_nt,
+                'id_term_bt' => $id_term_bt,
+                'id_niche' => $id_niche,
+                'id_user' => $userId,
+                'term_order' => $term_order,
+            ]);
+        }
+        return redirect()->route('tesauro_list.show', ['niche_filter' => $id_niche, 'bt_filter' => $bt_filter])->with('success', 'Relação (NT) cadastrada com sucesso!');
+    }
+
+
+
+    /**
+     * Editar rateios de um termo.
+     */
+    public function editTermRateiosForm($niche_filter, $bt_filter, $id)
+    {
+        $niche_filter = request()->input('niche_filter');
+        $bt_filter = request()->input('bt_filter');
+        $term = \App\Models\Term::findOrFail($id);
+        return view('tesauro.term_rateios', compact('term', 'niche_filter', 'bt_filter'));
+    }
+
+
+
+    
+
+    /**
      * Exibe o formulário para deletar uma relação.
      */
     public function deleteRelationForm()
@@ -268,7 +477,7 @@ class TesauroController extends Controller
         $name_term_nt = request()->input('name_term_nt');
         return view('tesauro.relation_delete', compact('niche_filter', 'id_term_bt', 'name_term_bt', 'id_term_nt', 'name_term_nt', 'bt_filter'));
     }
-    /**
+
     /**
      * Deleta uma relação.
      */

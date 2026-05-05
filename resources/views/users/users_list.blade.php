@@ -1,11 +1,13 @@
 @extends('layouts.app')
 @section('content')
+
     <div class="container">
         <div class="py-2 mb-4 rounded">
             <h4 class="text-center">Lista de Usuários </h4>
         </div>
         @if($users->isEmpty())
             <script>
+                alert('Nenhum usuário encontrado - Novo Usuário');
                 window.location.href = "{{ route('users_create.show') }}";
             </script>
         @else
@@ -30,6 +32,7 @@
                             <th>ID</th>
                             <th>Nome</th>
                             <th>Email</th>
+                            <th>CPF</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -39,6 +42,16 @@
                                 <td>{{ $user->id }}</td>
                                 <td>{{ $user->name }}</td>
                                 <td>{{ $user->email }}</td>
+                                @php
+                                // dd($users);
+                                    $dataDoc = $user->document_data;
+                                    if (is_string($dataDoc)) {
+                                        try { $dataDoc = json_decode($dataDoc, true); } catch (\Throwable $e) { $dataDoc = []; }
+                                    }
+                                    $cpf = isset($dataDoc['cpf']) ? $dataDoc['cpf'] : 'CPF não cadastrado';
+                                @endphp
+
+                                <td>{{ $cpf }}</td>
                                 <td>
                                     <a href="{{ route('users_show.show', $user->id) }}" class="btn btn-sm btn-info">Visualizar</a>
                                     <a href="{{ route('users_edit.show', $user->id) }}" class="btn btn-sm btn-primary">Editar</a>

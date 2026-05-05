@@ -64,7 +64,7 @@ class NicheController extends Controller
         $data = [];
         $data = $request->only(['niche', 'description', 'company_name', 'trade_name', 'foundation', 'authorization1', 'authorization2', 'cnpj', 'address', 'rules']);
         // dd($data);
-        $niche->niche_data = json_encode($data);
+        $niche->niche_data = $data;
 
         // $niche->update($validated);
         $niche->update($request->all());

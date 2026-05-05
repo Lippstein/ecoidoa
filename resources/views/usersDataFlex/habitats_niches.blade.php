@@ -20,6 +20,7 @@ use App\Models\UsersDataFlex;
                 <div class="text-[12px] leading-[20px] flex-1 p-6 pb-12 lg:p-20 bg-white dark:bg-[#161615] dark:text-[#EDEDEC] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d] rounded">
                     <form method="POST" action="{{ route('habitats_niches.save') }}">
                         @csrf
+                        {{-- <input type="hidden" name="invite" value="{{ auth()->id() }}"> --}}
                         <div style="display:grid; gap:18px;">
                             @foreach($habitats as $h)
                                 @php
@@ -62,13 +63,18 @@ use App\Models\UsersDataFlex;
                                                     }
                                                 @endphp    
                                                 <div id="niches" style="margin-bottom:6px; padding:6px 10px; background:#e0e7ef; border-radius:8px; display:flex; align-items:center;">
-                                                    <input type="radio" name="u_n_h_id" value="[{{ auth()->id() }},{{ $niche->id }},{{ $h->id }}]" style="margin-right:10px;" {{ $aux }}>
+                                                    <input type="radio" name="u_n_h_id" value="{{ json_encode(['n_id' => $niche->id, 'h_id' => $h->id]) }}" style="margin-right:10px;" {{ $aux }} required>
                                                     <span style="font-weight:600; color:#1e293b;"><strong>{{ $niche->niche }}</strong></span>
                                                     @if(!empty($ndata['description']))
                                                         <span style="font-size:12px; color:#475569; margin-left:8px;">{{ $ndata['description'] }} - {{ $ndata['company_name'] }}</span>
                                                     @endif
                                                     <span style="font-size:11px; color:#64748b; margin-left:8px;">ID: {{ $niche->id }}</span>
                                                 </div>
+                                                @if(in_array($niche->id, [3,4]))
+                                                    <div style="font-size: 10px; margin-left:24px; padding:6px 10px; background:#cbd5e1; border-radius:8px;">
+                                                        <input type="text" class="form-control form-control-sm" name="invite_{{ $niche->id }}" id="invite_{{ $niche->id }}" style="margin-right:10px;" maxlength="20" placeholder="Convite do Nicho!">
+                                                    </div>
+                                                @endif
                                             @empty
                                                 <li style="font-size:12px; color:#64748b;">Nenhum niche cadastrado para este habitat.</li>
                                             @endforelse

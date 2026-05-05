@@ -16,11 +16,11 @@ class NicheSeeder extends Seeder
              'company_name' => 'Núcleo Estadual de Ensino de Jovens e Adultos e de Cultura Popular Darcy Vargas',
                'trade_name' => 'NEEJACP-DV',
                'foundation' => 'Decreto 41.744 - D.O. de 26/07/2002',
-            'authorization' => 'Parecer 1465/2002 - D.O. de 30/12/2002',
-                  'address' => [
+            'authorization' => 'Parecer 1465/2002 - D.O. de 30/12/2002', //autorização1 autorizaçao2
+            'address' => [
                         'street' => 'Av. João Pessoa',
                         'number' => '1070',
-                          'city' => 'Porto Alegre',
+                          'city' => 'Porto Alegre', // ver localidaede
                          'state' => 'RS',
                            'zip' => '90040-000',
                        'country' => 'Brasil',
@@ -48,16 +48,16 @@ class NicheSeeder extends Seeder
           ],
             JSON_UNESCAPED_UNICODE),
 
-          'niche_params' => json_encode
-          ([
-              'level' => 'Séries Iniciais',
-              'activities' => ['activity1','activity2'],
-              'param1' => 'Ensino Fundamental',
-              'param2' => 'Ensino Médio',
-              'param3' => 'Valor do parâmetro',
-          ], JSON_UNESCAPED_UNICODE),
+          // 'niche_params' => json_encode
+          // ([
+          //     'level' => 'Séries Iniciais',
+          //     'activities' => ['activity1','activity2'],
+          //     'param1' => 'Ensino Fundamental',
+          //     'param2' => 'Ensino Médio',
+          //     'param3' => 'Valor do parâmetro',
+          // ], JSON_UNESCAPED_UNICODE),
 
-        'created_at' => now(),
+        'created_at' => now(), 
         ]);
         Niche::create([
         'niche' => 'NEEJACP-PF',

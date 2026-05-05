@@ -1,7 +1,5 @@
 @extends("layouts.app")
 @section('title', 'Idoa')
-{{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script> --}}
 
 @section('content')
 <div class="container">
@@ -15,39 +13,62 @@
         @csrf
         @method('POST')
         <input type="hidden" name="niche_filter" value="{{ request('niche_filter') }}">
+        <input type="hidden" name="bt_filter" value="{{ request('bt_filter') }}">
         <input type="hidden" name="id_term_bt" value="{{ request('id_term_bt', $id_term_bt ?? '') }}">
         <input type="hidden" name="term_order" value="{{ request('term_order', $term_order ?? '0') }}">
+        @php
+            $resolvedIdTermBt = request('id_term_bt', $id_term_bt ?? null);
+            $resolvedNameTermBt = optional(\App\Models\Term::find($resolvedIdTermBt))->term;
+        @endphp
         <div class="row mb-2">
             <label for="name_term_bt" class="col-sm-2 col-form-label"><strong>Termo Genérico:</strong></label>
             <div class="col">
-                <input type="text" class="form-control" id="name_term_bt" name="name_term_bt" value="{{ old('name_term_bt', $name_term_bt ?? request('name_term_bt')) }}" readonly>
+                <input type="text" class="form-control" id="name_term_bt" name="name_term_bt" value="{{ old('name_term_bt', $resolvedNameTermBt) }}" readonly>
             </div>
-        </div> 
+        </div>        
         <div class="row mb-2">
             <label for="term" class="col-sm-2 col-form-label"><strong>Termo Específico:</strong></label>
             <div class="col">
                 <input type="text" list="termList" id="id_term_nt_text" placeholder="Digite para buscar termo" autofocus>
                 <input type="hidden" name="id_term_nt" id="id_term_nt">
             </div>
-        </div>        
+        </div>
+        <script>
+            limparDatalist();
+            limparCampoTermo();
+        </script>
+
         <datalist id="termList">
-            @foreach($terms as $termo)
-                <option value="{{ $termo->term }}" data-id="{{ $termo->id }}"></option>
+            // O loop para preencher o datalist com os termos disponíveis já filtrados pelo controlador
+            @foreach($terms as $term)
+                <option value="{{ $term->term }}" data-id="{{ $term->id }}"></option>
             @endforeach
         </datalist>
 
         <script>
-        document.getElementById('id_term_nt_text').addEventListener('change', function() {
-            let text = this.value;
-            let options = document.querySelectorAll('#termList option');
-            let foundId = '';
-            options.forEach(opt => {
-                if(opt.value === text) {
-                    foundId = opt.getAttribute('data-id');
-                }
+            function limparDatalist() {
+                const datalist = document.getElementById('termList');
+                datalist.innerHTML = '';
+            }
+
+            function limparCampoTermo() {
+                document.getElementById('id_term_nt_text').value = '';
+                document.getElementById('id_term_nt').value = '';
+            }
+
+            document.getElementById('id_term_nt_text').addEventListener('change', function() {
+                let text = this.value;
+                let options = document.querySelectorAll('#termList option');
+                let foundId = '';
+
+                options.forEach(opt => {
+                    if (opt.value === text) {
+                        foundId = opt.getAttribute('data-id');
+                    }
+                });
+
+                document.getElementById('id_term_nt').value = foundId;
             });
-            document.getElementById('id_term_nt').value = foundId;
-        });
         </script>
 
         <div class="row mb-3">

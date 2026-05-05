@@ -23,4 +23,5 @@ class DashboardController extends Controller
             ->get();
         return view('dashboard', compact('usersDataFlexList'));
     }
+    
 }

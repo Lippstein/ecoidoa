@@ -88,23 +88,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/usersDataFlex/usersDataFlex_update/{id}', [UsersDataFlexController::class, 'updateUsersDataFlexForm'])->name('usersDataFlex_update.show');
     Route::get('/pdf_historico/{id}/{nivelEnsino}', [PdfController::class, 'historico'])->name('pdf.historico');
 
-    Route::match(['get', 'post'], 'term/tesauro_list', [TesauroController::class, 'listTesauroForm'])->name('tesauro_list.show');
-    Route::get('/term/tesauro_filter', [TesauroController::class, 'filterTesauroForm'])->name('tesauro_filter.show');
 
-    Route::get('/term/term_edit/{niche_filter}/{bt_filter}/{id}', [TesauroController::class, 'editTermForm'])->name('term_edit.show');
-    Route::post('/term/term_edit', [TesauroController::class, 'updateTermForm'])->name('term_edit.update');
 
-    Route::get('/term/relation_delete', [TesauroController::class, 'deleteRelationForm'])->name('delete_relation.show');
-    Route::post('/term/relation_delete', [TesauroController::class, 'destroyRelationForm'])->name('delete_relation.destroy');
+    
+    Route::match(['get', 'post'], '/tesauro/tesauro_list', [TesauroController::class, 'listTesauroForm'])->name('tesauro_list.show');
+    Route::get('/tesauro/tesauro_filter', [TesauroController::class, 'filterTesauroForm'])->name('tesauro_filter.show');
 
-    Route::get('/term/term_create', [TesauroController::class, 'addTermForm'])->name('term_create.show');
-    Route::post('/term/term_create', [TesauroController::class, 'storeTermForm'])->name('term_create.store');
-    Route::get('/term/term_creatent', [TesauroController::class, 'addTermNTForm'])->name('term_creatent.show');
-    Route::post('/term/term_creatent', [TesauroController::class, 'storeTermNTForm'])->name('term_creatent.store');
+    Route::get('/tesauro/term_edit/{niche_filter}/{bt_filter}/{id}', [TesauroController::class, 'editTermForm'])->name('term_edit.show');
+    Route::post('/tesauro/term_edit', [TesauroController::class, 'updateTermForm'])->name('term_edit.update');
+
+    Route::get('/tesauro/relation_delete', [TesauroController::class, 'deleteRelationForm'])->name('delete_relation.show');
+    Route::post('/tesauro/relation_delete', [TesauroController::class, 'destroyRelationForm'])->name('delete_relation.destroy');
+
+    Route::get('/tesauro/term_create', [TesauroController::class, 'addTermForm'])->name('term_create.show');
+    Route::post('/tesauro/term_create', [TesauroController::class, 'storeTermForm'])->name('term_create.store');
+    Route::get('/tesauro/term_creatent', [TesauroController::class, 'addTermNTForm'])->name('term_creatent.show');
+    Route::post('/tesauro/term_creatent', [TesauroController::class, 'storeTermNTForm'])->name('term_creatent.store');
 
     Route::get('/tesauro/{id_term_bt}/{id_niche}/filhos', [TesauroController::class, 'showChildren'])->name('tesauro.children');
     Route::post('/tesauro/swap-order', [TesauroController::class, 'swapOrder'])->name('tesauro.swapOrder');
 
-    Route::get('/term/term_docs/{niche_filter}/{bt_filter}/{id}', [TesauroController::class, 'editTermDocsForm'])->name('term_docs.show');
-    Route::post('/term/term_docs', [TesauroController::class, 'updateTermDocsForm'])->name('term_docs.update');
+    Route::get('/tesauro/term_docs/{niche_filter}/{bt_filter}/{id}', [TesauroController::class, 'editTermDocsForm'])->name('term_docs.show');
+    Route::post('/tesauro/term_docs', [TesauroController::class, 'updateTermDocsForm'])->name('term_docs.update');
+
+    Route::get('/tesauro/term_questions/{niche_filter}/{bt_filter}/{id}/{term_order}', [TesauroController::class, 'editTermQuestionsForm'])->name('term_questions.show');
+    Route::post('/tesauro/term_questions', [TesauroController::class, 'storeTermQuestionForm'])->name('term_questions.create');
+
+    Route::get('/tesauro/term_rateios/{niche_filter}/{bt_filter}/{id}', [TesauroController::class, 'editTermRateiosForm'])->name('term_rateios.show');
+    Route::post('/tesauro/term_rateios', [TesauroController::class, 'updateTermRateiosForm'])->name('term_rateios.update');
 });

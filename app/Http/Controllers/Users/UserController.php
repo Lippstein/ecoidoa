@@ -20,12 +20,21 @@ class UserController extends Controller
 
         $query = User::where('level', '<=', session('user_level'))
             ->orderBy('name')
-            ->select('id', 'name', 'email');
+            ->select('id', 'name', 'email', 'document_data');
 
         if (!empty($userFilter)) {
             $query->where(function ($q) use ($userFilter) {
                 $q->where('name', 'like', '%' . $userFilter . '%')
-                  ->orWhere('email', 'like', '%' . $userFilter . '%');
+                  ->orWhere('email', 'like', '%' . $userFilter . '%')
+                  ->orWhereRaw(
+                      "CONVERT(JSON_UNQUOTE(document_data) USING utf8mb4) COLLATE utf8mb4_general_ci like ?",
+                      ['%' . $userFilter . '%']
+                  );
+
+
+                  //   ->orWhereRaw(
+                    //       "REPLACE(REPLACE(REPLACE(JSON_UNQUOTE(JSON_EXTRACT(document_data, '$.cpf')), '.', ''), '-', ''), ' ', '') like ?",
+                    //       ['%' . preg_replace('/\D+/', '', $userFilter) . '%']
             });
         }
         $users = $query->paginate(10);
@@ -104,14 +113,17 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $dataaddress = $request->only(['street', 'number', 'city', 'state', 'zip', 'country', 'cellphone', 'phone', 'whatsapp', 'telegram', 'facebook', 'instagram']);
-        $user->address_data = json_encode($dataaddress);
+        $user->address_data = $dataaddress;
 
         $datadocument = $request->only(['type', 'doc_number', 'issuer', 'birth', 'birthplace', 'nationality', 'issue_date', 'valid_to', 'cnh', 'rg', 'cpf', 'workcard', 'election', 'passport', 'mother', 'father', 'marital', 'profession', 'gender']);
-        $user->document_data = json_encode($datadocument);
+        // $datadocument = json_encode($datadocument, JSON_UNESCAPED_UNICODE);
+        // $user->document_data = json_decode($datadocument);
+        $user->document_data = json_encode($datadocument, JSON_UNESCAPED_UNICODE);
 
         $user->update($request->all());
-        return redirect()->route('users_list.show')->with('success', 'Usuário atualizado com sucesso.');
-    }
+        return redirect()->route('users_edit.show', $user->id)->with('status', 'Usuário atualizado com sucesso.');
+    
+        }
 
     /**
      * Formulário para criar um novo usuário.
@@ -130,6 +142,9 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'address_data' => 'nullable|array',
+            'document_data' => 'nullable|array',
+    
         ]);
 
         // Criação do usuário
@@ -138,8 +153,8 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'level' => 0, // Nível padrão para novos usuários
-            'address_data' => json_encode([]), // ou ajuste conforme necessário
-            'document_data' => json_encode([]), // ou ajuste conforme necessário
+            'address_data' => $request->address_data ?? [], // ou ajuste conforme necessário
+            'document_data' => $request->document_data ?? [], // ou ajuste conforme necessário
         ]);
         return redirect()->route('users_list.show')->with('success', 'Usuário criado com sucesso.');
     }

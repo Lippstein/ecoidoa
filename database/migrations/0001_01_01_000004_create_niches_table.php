@@ -11,7 +11,7 @@ return new class extends Migration {
             $table->string('niche', 100);
             $table->foreignId('habitat_id')->constrained('habitats')->onUpdate('no action')->onDelete('no action');
             $table->json('niche_data')->nullable();
-            $table->json('niche_params')->nullable();
+            // $table->json('niche_params')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });

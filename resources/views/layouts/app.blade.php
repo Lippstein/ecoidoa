@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -95,6 +96,9 @@
         @if (session('status'))
             <div class="text-center alert alert-warning" role="alert">{{ session('status') }}</div>
         @endif
+        @if (session('success'))
+            <div class="text-center alert alert-success" role="alert">{{ session('success') }}</div>
+        @endif
         @if ($errors->any())
             <div style="color:red; margin-bottom:1em;">
                 <ul style="margin:0; padding:0 1em;">
@@ -111,7 +115,7 @@
             <p class="text-center" style="font-size: small;"><em>IdoA - Instituto de Filosofia do Antropoceno</em> &copy; {{ date('Y') }} Todos os direitos reservados.</p>
         </div>
     </div>
-    @yield('scripts')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @yield('scripts')
 </body>
 </html>

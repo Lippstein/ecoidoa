@@ -2,7 +2,7 @@
 @section('content')
 <div class="container">
     <div class="py-2 mb-4 rounded">
-        <h4 class="text-center">Meu Ecossistema </h4>
+        <h4 class="text-center">Resultado dos Rateios </h4>
     </div>
     @if($usersDataFlexList->isEmpty())
         {{-- redirect to habitats_niches --}}
@@ -30,13 +30,13 @@
 
                     {{-- Dados: {{ $data }}<br> --}}
                     @if ($habitat === 'NEAD')
-                        {{-- <a href="{{ route('resultados.show', $item->niche_id) }}">
+                        <a href="{{ route('login', $item->niche_id) }}">
                             {{ $habitat }}
-                        </a> --}}
+                        </a>
                     @elseif ($habitat === 'RATEIO')
-                        {{-- <a href="{{ route('resultados.show', $item->niche_id) }}">
+                        <a href="{{ route('login', $item->niche_id) }}">
                             {{ 'Clique aqui para acessar ' . $habitat . ' -> ' . $item->niche->niche }}
-                        </a> --}}
+                        </a>
                     @elseif ($habitat === 'OUTROSISTEMA')
                         {{-- <a href="{{ route('outrosistema.show', $item->niche_id) }}">
                             {{ $habitat }}

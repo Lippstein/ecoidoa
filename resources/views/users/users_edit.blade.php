@@ -56,9 +56,33 @@
         </div>        
         @php
             $data = $user->address_data;
+
+            // Se for string, tenta decodificar e checar erro explícito
             if (is_string($data)) {
-                try { $data = json_decode($data, true); } catch (\Throwable $e) { $data = []; }
+                // tratar string vazia como nula
+                if ($data === '') {
+                    $data = [];
+                } else {
+                    $decoded = json_decode($data, true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        $data = $decoded;
+                    } else {
+                        // opcional: log do erro para diagnóstico
+                        \Log::warning('Falha ao decodificar JSON em address_data', [
+                            'user_id' => $user->id ?? null,
+                            'json_error' => json_last_error_msg(),
+                            'raw' => \Illuminate\Support\Str::limit($data, 200),
+                        ]);
+                        $data = [];
+                    }
+                }
             }
+
+            // Se for null ou outro tipo, normalize para array
+            if (!is_array($data)) {
+                $data = [];
+            }
+
             $street = isset($data['street']) ? $data['street'] : 'Rua não cadastrada';
             $number = isset($data['number']) ? $data['number'] : 'Número não cadastrado';
             $city = isset($data['city']) ? $data['city'] : 'Cidade não cadastrada';
@@ -165,9 +189,33 @@
             <hr style="margin:8px 0; opacity:.3;">
         </div>
         @php
+
             $dataDoc = $user->document_data;
+
+            // Se for string, tenta decodificar e checar erro explícito
             if (is_string($dataDoc)) {
-                try { $dataDoc = json_decode($dataDoc, true); } catch (\Throwable $e) { $dataDoc = []; }
+                // tratar string vazia como nula
+                if ($dataDoc === '') {
+                    $dataDoc = [];
+                } else {
+                    $decoded = json_decode($dataDoc, true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        $dataDoc = $decoded;
+                    } else {
+                        // opcional: log do erro para diagnóstico
+                        \Log::warning('Falha ao decodificar JSON em document_data', [
+                            'user_id' => $user->id ?? null,
+                            'json_error' => json_last_error_msg(),
+                            'raw' => \Illuminate\Support\Str::limit($dataDoc, 200),
+                        ]);
+                        $dataDoc = [];
+                    }
+                }
+            }
+
+            // Se for null ou outro tipo, normalize para array
+            if (!is_array($dataDoc)) {
+                $dataDoc = [];
             }
 
             $type = isset($dataDoc['type']) ? $dataDoc['type'] : 'Tipo de documento não cadastrado';

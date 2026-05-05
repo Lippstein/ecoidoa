@@ -2,18 +2,54 @@
 @section('title', 'Idoa')
 @section('content')
 <div class="container">
+    @php
+        $tabNiches = \App\Models\Niche::where('id', $niche_filter)->first(); 
+        $tabHabitats = \App\Models\Habitat::where('id', $tabNiches->habitat_id)->first();
+        $tabTerms = \App\Models\Term::where('id_niche', $niche_filter)->get();
+        $tabRelations = \App\Models\Relation::where('id_niche', $niche_filter)->get();
+        // Se NÃO tem nenhum termo cadastrado do nicho na tabela terms 
+        // Então deve-se cadastrar o term (habitat) primeiro, depois o term (niche) na tabela terms 
+        // E, na tabela relations criar a relação do termo genérico BT (habitat) com o termo específico NT (niche)
+        // dd($tabTerms);
+        if($tabTerms->isEmpty()) {
+            $termBTname = $tabHabitats->habitat;
+            $termNTname = $tabNiches->niche;
+            \App\Models\Term::firstOrCreate(
+                ['term' => $termBTname, 'id_niche' => $niche_filter],
+                ['definition' => 'Termo Genérico (raiz ou inicial) deste nicho', 'language' => 'pt_BR']
+            );
+            \App\Models\Term::firstOrCreate(
+                ['term' => $termNTname, 'id_niche' => $niche_filter],
+                ['definition' => 'Primeiro termo específico deste nicho', 'language' => 'pt_BR']
+            );
+            $tabTerms = \App\Models\Term::where('id_niche', $niche_filter)->get();
+            $termBT = \App\Models\Term::where('term', $termBTname)->where('id_niche', $niche_filter)->first();
+            $termNT = \App\Models\Term::where('term', $termNTname)->where('id_niche', $niche_filter)->first();
+            \App\Models\Relation::firstOrCreate(
+                [
+                    'id_niche' => $niche_filter,
+                    'id_term_bt' => $termBT->id,
+                    'id_term_nt' => $termNT->id,
+                    'id_user' => auth()->id(),
+                ],
+                ['term_order' => 1]
+            );
+            $tabRelations = \App\Models\Relation::where('id_niche', $niche_filter)->get();
+        }
+
+    @endphp
     <div class="py-2 mb-4 rounded">
-        <h4 class="text-center">Cadastrar Novo Termo no Nicho: {{ $niche_filter }} </h4>
+        <h4 class="text-center">Cadastrar Novo Termo no Nicho: {{ $tabNiches->niche }} </h4>
     </div>
     <div class="d-flex justify-content-end gap-2 mb-3">
         <a href="{{ route('tesauro_list.show', ['niche_filter' => $niche_filter, 'bt_filter' => $bt_filter]) }}" class="btn btn-info">Voltar para o Tesauro</a>
     </div>
 
-
-        @php
-            $termsNames = \App\Models\Term::all()->keyBy('id'); // Cria índice [id] => objeto Term
-            $relations = \App\Models\Relation::orderBy('term_order')->get()->toArray();
-            // dd($relations);
+    @php
+        $relations = \App\Models\Relation::orderBy('term_order')
+            ->get()
+            ->toArray();
+        if($bt_filter > '0') {
             $children = [];
             foreach ($relations as $rel) {
                 // echo $rel['id_niche'] . " - " . $niche_filter . "<br>";
@@ -26,50 +62,66 @@
                     'term_order' => $rel['term_order'],
                 ];
             }
-            //  dd($children);
+        } 
+        if(empty($children)) {
+            // w???????????????????????????????????????????????????????w
+            // $tabNiches = \App\Models\Niche::where('id', $niche_filter)->first(); 
+            // $tabHabitats = \App\Models\Habitat::where('id', $tabNiches->habitat_id)->first();
+            // // agora procura na tabela termos filtrando pelo habitat ou niche (mas NÃO TEM ID_NICHE ???????????);  
+            // $tabTerms = \App\Models\Term::where('id_niche', $niche_filter)->get();
+            // dd($tabHabitats);
+            $bt_filter = $tabNiches->id;
+            $id_term_bt = $niche_filter;
+            $children[$bt_filter][] = [
+                'id_term_nt' => $id_term_bt,
+                'term_order' => 0,
+            ];
+        }
 
-            function nextTermOrder($id_termo_bt, $children, $termOrder) {
-                $filteredChildren = [];
-                if(isset($children[$id_termo_bt])) {
-                    $filteredChildren[$id_termo_bt] = $children[$id_termo_bt];
-                }
-                $maxOrder = $termOrder;
-                if (!empty($filteredChildren[$id_termo_bt])) {
-                    foreach ($filteredChildren[$id_termo_bt] as $filho) {
-                        if ($filho['term_order'] >= $maxOrder) {
-                            $maxOrder = $filho['term_order'] + 1;
-                        }
-                    }
-                } else {
-                    $maxOrder = $termOrder . '1';
-                }
-                return $maxOrder;
+
+        function nextTermOrder($id_termo_bt, $children, $termOrder) {
+            $filteredChildren = [];
+            if(isset($children[$id_termo_bt])) {
+                $filteredChildren[$id_termo_bt] = $children[$id_termo_bt];
             }
-            // $name = isset($termsNames[$filho['id_term_nt']]) ? $termsNames[$filho['id_term_nt']]->term : "(termo não encontrado)";
-            // $termOrder = $filho['term_order'];
-            $id_term_nt = $children[$id_term_bt][0]['id_term_nt'] ?? null;
-            if(!is_null($id_term_nt)) {
+            $maxOrder = $termOrder;
+            if (!empty($filteredChildren[$id_termo_bt])) {
+                foreach ($filteredChildren[$id_termo_bt] as $filho) {
+                    if ($filho['term_order'] >= $maxOrder) {
+                        $maxOrder = $filho['term_order'] + 1;
+                    }
+                }
+            } else {
+                $maxOrder = $termOrder . '1';
+            }
+            return $maxOrder;
+        }
+        $id_term_nt = $children[$id_term_bt][0]['id_term_nt'] ?? null;
+        if(!is_null($id_term_nt)) {
                 foreach ($children[$bt_filter] as $filho) {
                     if ($filho['id_term_nt'] != $id_term_bt) {
                         $id_term_nt = $id_term_bt;
                         $term_order = $filho['term_order'];
                     }
-                }
-                $nextOrder = nextTermOrder($id_term_nt, $children, $term_order);
-            } else {
-                foreach ($children[$bt_filter] as $filho) {
-                    if ($filho['id_term_nt'] == $id_term_bt) {
-                        $id_term_nt = $filho['id_term_nt'];
-                        $term_order = $filho['term_order'];
-                    }
-                }
-                $nextOrder = nextTermOrder($id_term_nt, $children, $term_order);
             }
-            $name_term_bt = isset($termsNames[$id_term_bt]) ? $termsNames[$id_term_bt]->term : "(termo não encontrado)";
-            // $name = isset($termsNames[$filho['id_term_nt']]) ? $termsNames[$filho['id_term_nt']]->term : "(termo não encontrado)";
-
-            // dd($name_term_bt, $id_term_nt, $term_order, $id_term_bt, $nextOrder);
-        @endphp
+            $nextOrder = nextTermOrder($id_term_nt, $children, $term_order);
+        } else {
+                    foreach ($children[$bt_filter] as $filho) {
+                        if ($filho['id_term_nt'] == $id_term_bt) {
+                            $id_term_nt = $filho['id_term_nt'];
+                            $term_order = $filho['term_order'];
+                        }
+            }
+            $nextOrder = nextTermOrder($id_term_nt, $children, $term_order);
+        }
+        $name_term_bt = null;
+        foreach ($tabTerms as $i) {
+            if (isset($i->id) && $i->id == $id_term_bt) {
+                $name_term_bt = $i->term;
+                break;
+            }
+        }
+    @endphp
 
 
 
@@ -80,30 +132,48 @@
         <input type="hidden" name="bt_filter" value="{{ request('bt_filter', $bt_filter ?? '0') }}">
         <input type="hidden" name="id_term_bt" value="{{ request('id_term_bt', $id_term_bt ?? '') }}">
         <input type="hidden" name="term_order" value="{{ request('term_order', $term_order ?? '0') }}">
-        <div class="row mb-2">
-            <label for="name_term_bt" class="col-sm-2 col-form-label"><strong>Termo Genérico:</strong></label>
-            <div class="col">
-                <input type="text" class="form-control" id="name_term_bt" name="name_term_bt" value="{{ old('name_term_bt', $name_term_bt ?? request('name_term_bt')) }}" readonly>
+        <input type="hidden" name="soTermo" value="{{ request('soTermo', $soTermo ?? '') }}">
+
+        @if(request('soTermo') === 'soTermo')
+            <div class="row mb-2">
+                <label for="term" class="col-sm-2 col-form-label"><strong>Nome do Termo:</strong></label>
+                <div class="col">
+                    <input type="text" class="form-control" id="term" name="term" value="{{ old('term', $term ?? request('term')) }}" autofocus>
+                </div>
+            </div> 
+            <div class="row col mb-2">
+                <label for="definition" class="col-sm-2 col-form-label"><strong>Definição:</strong></label>
+                <div class="col">
+                    <textarea required class="form-control" name="definition" rows="3">{{ old('definition') }} </textarea>
+                </div>
             </div>
-        </div> 
-        <div class="row mb-2">
-            <label for="term" class="col-sm-2 col-form-label"><strong>Termo Específico:</strong></label>
-            <div class="col">
-                <input type="text" class="form-control" id="term" name="term" value="{{ old('term') }}" required autofocus>
+        @endif
+        @if(request('soTermo') !== 'soTermo')
+            <div class="row mb-2">
+                <label for="name_term_bt" class="col-sm-2 col-form-label"><strong>Termo Genérico:</strong></label>
+                <div class="col">
+                    <input type="text" class="form-control" id="name_term_bt" name="name_term_bt" value="{{ old('name_term_bt', $name_term_bt ?? request('name_term_bt')) }}" readonly>
+                </div>
+            </div> 
+             <div class="row mb-2">
+                <label for="term" class="col-sm-2 col-form-label"><strong>Termo Específico:</strong></label>
+                <div class="col">
+                    <input type="text" class="form-control" id="term" name="term" value="{{ old('term') }}" required autofocus>
+                </div>
             </div>
-        </div>
-        <div class="row col mb-2">
-            <label for="definition" class="col-sm-2 col-form-label"><strong>Definição:</strong></label>
-            <div class="col">
-                <textarea required class="form-control" name="definition" rows="3" autofocus>{{ old('definition') }} </textarea>
+            <div class="row col mb-2">
+                <label for="definition" class="col-sm-2 col-form-label"><strong>Definição:</strong></label>
+                <div class="col">
+                    <textarea required class="form-control" name="definition" rows="3" autofocus>{{ old('definition') }} </textarea>
+                </div>
             </div>
-        </div>
-        <div class="row col mb-2">
-            <label for="term_order" class="col-sm-2 col-form-label"><strong>Ordem do Termo:</strong></label>
-            <div class="col">
-                <input type="number" class="form-control" id="term_order" name="term_order" value="{{ old('term_order', $nextOrder ?? '0') }}" readonly>
+            <div class="row col mb-2">
+                <label for="term_order" class="col-sm-2 col-form-label"><strong>Ordem do Termo:</strong></label>
+                <div class="col">
+                    <input type="number" class="form-control" id="term_order" name="term_order" value="{{ old('term_order', $nextOrder ?? '0') }}" readonly>
+                </div>
             </div>
-        </div>
+        @endif
         <div class="row mb-2">
             <label for="language" class="col-sm-2 col-form-label"><strong>Idioma:</strong></label>
             <div class="col">
