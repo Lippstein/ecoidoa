@@ -111,9 +111,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tesauro/term_docs/{niche_filter}/{bt_filter}/{id}', [TesauroController::class, 'editTermDocsForm'])->name('term_docs.show');
     Route::post('/tesauro/term_docs', [TesauroController::class, 'updateTermDocsForm'])->name('term_docs.update');
 
-    Route::get('/tesauro/term_questions/{niche_filter}/{bt_filter}/{id}/{term_order}', [TesauroController::class, 'editTermQuestionsForm'])->name('term_questions.show');
-    Route::post('/tesauro/term_questions', [TesauroController::class, 'storeTermQuestionForm'])->name('term_questions.create');
+    Route::get('/tesauro/term_questions/{niche_filter}/{bt_filter}/{id}/{term_order}', [TesauroController::class, 'createTermQuestionsForm'])->name('term_questions.create');
+    Route::post('/tesauro/term_questions', [TesauroController::class, 'storeTermQuestionForm'])->name('term_questions.store');
+    Route::get('/tesauro/term_questions_showedit/{niche_filter}/{bt_filter}/{id}', [TesauroController::class, 'editTermQuestionsForm'])->name('term_questions.showedit');
+    Route::post('/tesauro/term_questions_showedit', [TesauroController::class, 'updateTermQuestionsForm'])->name('term_questions.update');
 
-    Route::get('/tesauro/term_rateios/{niche_filter}/{bt_filter}/{id}', [TesauroController::class, 'editTermRateiosForm'])->name('term_rateios.show');
-    Route::post('/tesauro/term_rateios', [TesauroController::class, 'updateTermRateiosForm'])->name('term_rateios.update');
+    Route::get('/tesauro/term_rateios/{niche_filter}/{bt_filter}/{id}/{term_order}', [TesauroController::class, 'createTermRateiosForm'])->name('term_rateios.create');
+    Route::post('/tesauro/term_rateios', [TesauroController::class, 'storeTermRateiosForm'])->name('term_rateios.store');
+
+    Route::get('/usersDataFlex/indebtedUsers/{udf_id}', [UsersDataFlexController::class, 'showIndebtedUsersForm'])->name('usersDataFlex_indebtedUsers.show');
+    Route::get('/usersDataFlex_creditorUsers/{udf_id}', [UsersDataFlexController::class, 'showCreditorUsersForm'])->name('usersDataFlex_creditorUsers.show');
+    Route::get('/usersDataFlex/results/{udf_id}', [UsersDataFlexController::class, 'showResultsForm'])->name('usersDataFlex_results.show');
 });

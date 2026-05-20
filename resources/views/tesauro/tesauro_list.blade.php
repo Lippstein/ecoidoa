@@ -172,16 +172,17 @@
                                 'name_term_bt' => $name, 
                                   'term_order' => $nextOrder
                                 ]);
-                            $questionsUrl = route('term_questions.show', [
+                            $questionsUrl = route('term_questions.create', [
                                 'niche_filter' => $niche_filter, 
                                    'bt_filter' => $bt_filter, 
                                           'id' => $filho['id_term_nt'],
-                                          'term_order' => $nextOrder
+                                  'term_order' => $nextOrder
                                 ]);
-                            $rateiosUrl = route('term_rateios.show', [
+                            $rateiosUrl = route('term_rateios.create', [
                                 'niche_filter' => $niche_filter, 
                                    'bt_filter' => $bt_filter, 
-                                          'id' => $filho['id_term_nt']
+                                          'id' => $filho['id_term_nt'],
+                                  'term_order' => $nextOrder
                                 ]);
 
 

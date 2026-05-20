@@ -68,7 +68,7 @@
     </div>
     <div class="container">
         <div class="py-2 mb-4 rounded">
-            <h4 class="text-center">Editar Questões do Termo </h4>
+            <h4 class="text-center">Editar/Ver Questão do Termo</h4>
         </div>
         <div class="d-flex justify-content-end gap-2 mb-3">
             <a href="{{ route('tesauro_list.show', ['niche_filter' => $niche_filter, 'bt_filter' => $bt_filter]) }}"
@@ -77,29 +77,42 @@
         @php
 
             $idTermo = request('id', $term->id ?? '');
-            $question = 'question_' . $idTermo . '_';
-            $questionsDoTermo = \App\Models\Term::where('term', 'like', "%$question%")->get();
-            $qtdQuestionsDoTermo = $questionsDoTermo->count() + 1;
-            $seguinteNumero = '00000000' . $qtdQuestionsDoTermo;
-            $ultimas6Posicoes = substr($seguinteNumero, -5);
-            $nextTermName = 'question_' . $idTermo . '_' . $ultimas6Posicoes;
-            $term_order = old('term_order', $term_order ?? 0);
+            $termName = $term->term ?? '';
+
+            // Carrega os dados da questao pelo idTermo na tabela terms
+            $termData = is_array($term->term_data ?? null) ? $term->term_data : [];
+            $questionData = data_get($termData, 'questions.0', []);
+
+            $getQuestionField = function (string $field, $default = '') use ($termData, $questionData) {
+                return data_get($termData, $field, data_get($questionData, $field, $default));
+            };
+
+
+            // $question = 'question_' . $idTermo . '_';
+            $questionsDoTermo = \App\Models\Term::where('id', $idTermo)->get();
+            // $qtdQuestionsDoTermo = $questionsDoTermo->count() + 1;
+            // $seguinteNumero = '00000000' . $qtdQuestionsDoTermo;
+            // $ultimas6Posicoes = substr($seguinteNumero, -5);
+            // $termName = 'question_' . $idTermo . '_' . $ultimas6Posicoes;
 
             // valores padrão (evita Undefined variable)
              // $question_type = '';
-            $statement = '';
-            $alternative_1 = '';
-            $expl_alt_1 = '';
-            $alternative_2 = '';
-            $expl_alt_2 = '';
-            $alternative_3 = '';
-            $expl_alt_3 = '';
-            $alternative_4 = '';
-            $expl_alt_4 = '';
-            $correct_option = '';
-            $dificulty = '';
-            $answers = 3;
-            $hits = 1;
+
+             
+
+            $statement = old('statement', $getQuestionField('statement', ''));
+            $alternative_1 = old('alternative_1', $getQuestionField('alternative_1', ''));
+            $expl_alt_1 = old('expl_alt_1', $getQuestionField('expl_alt_1', ''));
+            $alternative_2 = old('alternative_2', $getQuestionField('alternative_2', ''));
+            $expl_alt_2 = old('expl_alt_2', $getQuestionField('expl_alt_2', ''));
+            $alternative_3 = old('alternative_3', $getQuestionField('alternative_3', ''));
+            $expl_alt_3 = old('expl_alt_3', $getQuestionField('expl_alt_3', ''));
+            $alternative_4 = old('alternative_4', $getQuestionField('alternative_4', ''));
+            $expl_alt_4 = old('expl_alt_4', $getQuestionField('expl_alt_4', ''));
+            $correct_option = old('correct_option', $getQuestionField('correct_option', ''));
+            $dificulty = old('dificulty', $getQuestionField('dificulty', ''));
+            $answers = old('answers', $getQuestionField('answers', 3));
+            $hits = old('hits', $getQuestionField('hits', 1));
 
             $definition = '';
             $id_niche = old('niche_filter', $niche_filter ?? ($term->id_niche ?? ''));
@@ -109,65 +122,14 @@
             $userId = auth()->id() ?? 0;
             $userName = auth()->user()?->name ?? 'Desconhecido';
 
+            // buscar o termBT do id do termo para mostrar o nome do BT no título da página
+            $termNT = \App\Models\Relation::where('id_term_nt', $term->id)->first();  
+            $termBTdoNT = $termNT->id_term_bt ?? null;
+            $termBT = \App\Models\Term::where('id', $termBTdoNT)->first();
+            $nameBT = $termBT->term ?? 'BT Desconhecido';
+
         @endphp
 
-        <div class="card mt-4">
-            <div class="card-header">
-                Questões do termo: <strong>{{ $idTermo }} - {{ $term->term }}</strong>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-sm table-striped mb-0">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Termo</th>
-                                <th>Tipo de Questão</th>
-                                <th>Mostrar</th>
-                                <th>Editar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($questionsDoTermo as $questionTerm)
-                                @php
-                                    $questionsUrlVer = route('term_questions.showedit', [
-                                        'niche_filter' => $id_niche, 
-                                        'bt_filter' => $bt_filter, 
-                                        'id' => $questionTerm->id,
-                                    ]);
-                                    $questionsUrlEditar = route('term_questions.showedit', [
-                                        'niche_filter' => $id_niche, 
-                                        'bt_filter' => $bt_filter, 
-                                        'id' => $questionTerm->id,
-                                    ]);
-                                    $linkQuestionShow = '<a href="' . $questionsUrlVer . '" class="link-opacity-75-hover">Ver</a>';
-                                    $linkQuestionEdit = '<a href="' . $questionsUrlEditar . '" class="link-opacity-75-hover">Editar</a>';
-
-                                    $questionType =
-                                        data_get($questionTerm->term_data, 'question_type') ??
-                                        (data_get($questionTerm->term_data, 'questions.0.question_type') ?? '-');
-                                @endphp
-                                <tr>
-                                    <td>{{ $questionTerm->id }}</td>
-                                    <td>{{ $questionTerm->term }}</td>
-                                    <td>{{ $questionType }}</td>
-                                    <td>{!! $linkQuestionShow !!}</td>
-                                    <td>{!! $linkQuestionEdit !!}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted">Nenhuma questão encontrada.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
-        <div class="mt-2 mb-3 px-3 text-end">
-            Fim das questões cadastradas para este termo
-        </div>
 
         <div class="accordion accordion-flush" id="accordionFlushExample">
             <div class="accordion-item">
@@ -179,16 +141,14 @@
                 </h2>
                 <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
                     <div class="accordion-body">
-                        <form id="questionFormSingle" method="POST" action="{{ route('term_questions.store') }}"
+                        <form id="questionFormSingle" method="POST" action="{{ route('term_questions.update') }}"
                             class="m-4 question-form" enctype="multipart/form-data">
                             @csrf
                             @method('POST')
                             <input type="hidden" name="niche_filter" value="{{ old('niche_filter', $niche_filter) }}">
                             <input type="hidden" name="bt_filter" value="{{ old('bt_filter', $bt_filter) }}">
                             <input type="hidden" name="term_id" value="{{ request('id', $term->id ?? '') }}">
-                            <input type="hidden" name="nextTermName" value="{{ $nextTermName }}">
                             <input type="hidden" name="question_type" value="Resposta_Unica">
-                            <input type="hidden" name="term_order" value="{{ old('term_order', $term_order) }}">
 
                             {{-- Resposta Única --}}
                             <div class="border rounded row mb-2">
@@ -199,7 +159,7 @@
                             </div>
                             <div class="row mb-2">
                                 <label for="term" class="col-sm-2 col-form-label fw-semibold">Questão
-                                    {{ substr($nextTermName, -2) }}:</label>
+                                    {{ substr($termName, -2) }}:</label>
                                 <div class="col">
                                     <input type="text" class="form-control" id="term" name="term"
                                         value="{{ old('term', $term->term ?? '') }}" readonly>
@@ -364,7 +324,7 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <button type="submit" value="Incluir" class="btn btn-primary">(+) Incluir
+                                <button type="submit" value="Incluir" class="btn btn-primary">Alterar 
                                     Questão</button>
                             </div>
                         </form>
@@ -380,16 +340,14 @@
                 </h2>
                 <div id="flush-collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
                     <div class="accordion-body">
-                        <form id="questionFormMultiple" method="POST" action="{{ route('term_questions.store') }}"
+                        <form id="questionFormMultiple" method="POST" action="{{ route('term_questions.update') }}"
                             class="m-4 question-form" enctype="multipart/form-data">
                             @csrf
                             @method('POST')
                             <input type="hidden" name="niche_filter" value="{{ old('niche_filter', $niche_filter) }}">
                             <input type="hidden" name="bt_filter" value="{{ old('bt_filter', $bt_filter) }}">
                             <input type="hidden" name="term_id" value="{{ request('id', $term->id ?? '') }}">
-                            <input type="hidden" name="nextTermName" value="{{ $nextTermName }}">
                             <input type="hidden" name="question_type" value="Resposta_Multipla">
-                            <input type="hidden" name="term_order" value="{{ old('term_order', $term_order) }}">
                             {{-- Resposta Múltipla --}}
                             <div class="border rounded row mb-2">
                                 <p class="mb-1"><strong>Resposta Múltipla</strong> — Mais de uma alternativa pode estar
@@ -399,7 +357,7 @@
                             </div>
                             <div class="row mb-2">
                                 <label for="term" class="col-sm-2 col-form-label fw-semibold">Questão
-                                    {{ substr($nextTermName, -2) }}:</label>
+                                    {{ substr($termName, -2) }}:</label>
                                 <div class="col">
                                     <input type="text" class="form-control" id="term" name="term"
                                         value="{{ old('term', $term->term ?? '') }}" readonly>
@@ -561,7 +519,7 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <button type="submit" value="Incluir" class="btn btn-primary">(+) Incluir
+                                <button type="submit" value="Incluir" class="btn btn-primary">Alterar 
                                     Questão</button>
                             </div>
                         </form>
@@ -579,16 +537,14 @@
                     data-bs-parent="#accordionFlushExample">
                     <div class="accordion-body">
                         <form id="questionFormAfirmacaoIncompleta" method="POST"
-                            action="{{ route('term_questions.store') }}" class="m-4 question-form"
+                            action="{{ route('term_questions.update') }}" class="m-4 question-form"
                             enctype="multipart/form-data">
                             @csrf
                             @method('POST')
                             <input type="hidden" name="niche_filter" value="{{ old('niche_filter', $niche_filter) }}">
                             <input type="hidden" name="bt_filter" value="{{ old('bt_filter', $bt_filter) }}">
                             <input type="hidden" name="term_id" value="{{ request('id', $term->id ?? '') }}">
-                            <input type="hidden" name="nextTermName" value="{{ $nextTermName }}">
                             <input type="hidden" name="question_type" value="Afirmacao_Incompleta">
-                            <input type="hidden" name="term_order" value="{{ old('term_order', $term_order) }}">
                             {{-- Afirmação Incompleta --}}
                             <div class="border rounded row mb-2">
                                 <p class="mb-1"><strong>Afirmação Incompleta</strong> — O enunciado apresenta uma frase
@@ -598,7 +554,7 @@
                             </div>
                             <div class="row mb-2">
                                 <label for="term" class="col-sm-2 col-form-label fw-semibold">Questão
-                                    {{ substr($nextTermName, -2) }}:</label>
+                                    {{ substr($termName, -2) }}:</label>
                                 <div class="col">
                                     <input type="text" class="form-control" id="term" name="term"
                                         value="{{ old('term', $term->term ?? '') }}" readonly>
@@ -763,7 +719,7 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <button type="submit" value="Incluir" class="btn btn-primary">(+) Incluir
+                                <button type="submit" value="Incluir" class="btn btn-primary">Alterar 
                                     Questão</button>
                             </div>
                         </form>
@@ -780,16 +736,14 @@
                 </h2>
                 <div id="flush-collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
                     <div class="accordion-body">
-                        <form id="questionFormFocoNegativo" method="POST" action="{{ route('term_questions.store') }}"
+                        <form id="questionFormFocoNegativo" method="POST" action="{{ route('term_questions.update') }}"
                             class="m-4 question-form" enctype="multipart/form-data">
                             @csrf
                             @method('POST')
                             <input type="hidden" name="niche_filter" value="{{ old('niche_filter', $niche_filter) }}">
                             <input type="hidden" name="bt_filter" value="{{ old('bt_filter', $bt_filter) }}">
                             <input type="hidden" name="term_id" value="{{ request('id', $term->id ?? '') }}">
-                            <input type="hidden" name="nextTermName" value="{{ $nextTermName }}">
                             <input type="hidden" name="question_type" value="Foco_Negativo">
-                            <input type="hidden" name="term_order" value="{{ old('term_order', $term_order) }}">
                             {{-- Foco Negativo --}}
                             <div class="border rounded row mb-2">
                                 <p class="mb-1"><strong>Foco Negativo</strong> — O enunciado pede para identificar a
@@ -801,7 +755,7 @@
                             </div>
                             <div class="row mb-2">
                                 <label for="term" class="col-sm-2 col-form-label fw-semibold">Questão
-                                    {{ substr($nextTermName, -2) }}:</label>
+                                    {{ substr($termName, -2) }}:</label>
                                 <div class="col">
                                     <input type="text" class="form-control" id="term" name="term"
                                         value="{{ old('term', $term->term ?? '') }}" readonly>
@@ -966,7 +920,7 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <button type="submit" value="Incluir" class="btn btn-primary">(+) Incluir
+                                <button type="submit" value="Incluir" class="btn btn-primary">Alterar 
                                     Questão</button>
                             </div>
                         </form>
@@ -983,16 +937,14 @@
                 </h2>
                 <div id="flush-collapseFive" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
                     <div class="accordion-body">
-                        <form id="questionFormAssercaoRazao" method="POST" action="{{ route('term_questions.store') }}"
+                        <form id="questionFormAssercaoRazao" method="POST" action="{{ route('term_questions.update') }}"
                             class="m-4 question-form" enctype="multipart/form-data">
                             @csrf
                             @method('POST')
                             <input type="hidden" name="niche_filter" value="{{ old('niche_filter', $niche_filter) }}">
                             <input type="hidden" name="bt_filter" value="{{ old('bt_filter', $bt_filter) }}">
                             <input type="hidden" name="term_id" value="{{ request('id', $term->id ?? '') }}">
-                            <input type="hidden" name="nextTermName" value="{{ $nextTermName }}">
                             <input type="hidden" name="question_type" value="Assercao_Razao">
-                            <input type="hidden" name="term_order" value="{{ old('term_order', $term_order) }}">
                             {{-- Asserção e Razão --}}
                             <div class="border rounded row mb-2">
                                 <p class="mb-1"><strong>Asserção e Razão</strong> — Apresenta duas afirmações conectadas
@@ -1004,7 +956,7 @@
                             </div>
                             <div class="row mb-2">
                                 <label for="term" class="col-sm-2 col-form-label fw-semibold">Questão
-                                    {{ substr($nextTermName, -2) }}:</label>
+                                    {{ substr($termName, -2) }}:</label>
                                 <div class="col">
                                     <input type="text" class="form-control" id="term" name="term"
                                         value="{{ old('term', $term->term ?? '') }}" readonly>
@@ -1169,7 +1121,7 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <button type="submit" value="Incluir" class="btn btn-primary">(+) Incluir
+                                <button type="submit" value="Incluir" class="btn btn-primary">Alterar 
                                     Questão</button>
                             </div>
                         </form>
@@ -1188,16 +1140,14 @@
                     data-bs-parent="#accordionFlushExample">
                     <div class="accordion-body">
                         <form id="questionFormAssociacaoCorrespondencia" method="POST"
-                            action="{{ route('term_questions.store') }}" class="m-4 question-form"
+                            action="{{ route('term_questions.update') }}" class="m-4 question-form"
                             enctype="multipart/form-data">
                             @csrf
                             @method('POST')
                             <input type="hidden" name="niche_filter" value="{{ old('niche_filter', $niche_filter) }}">
                             <input type="hidden" name="bt_filter" value="{{ old('bt_filter', $bt_filter) }}">
                             <input type="hidden" name="term_id" value="{{ request('id', $term->id ?? '') }}">
-                            <input type="hidden" name="nextTermName" value="{{ $nextTermName }}">
                             <input type="hidden" name="question_type" value="Associacao_Correspondencia">
-                            <input type="hidden" name="term_order" value="{{ old('term_order', $term_order) }}">
                             {{-- Associação (ou Correspondência) --}}
                             <div class="border rounded row mb-2">
                                 <p class="mb-1"><strong>Associação (ou Correspondência)</strong> — O aluno deve
@@ -1208,7 +1158,7 @@
                             </div>
                             <div class="row mb-2">
                                 <label for="term" class="col-sm-2 col-form-label fw-semibold">Questão
-                                    {{ substr($nextTermName, -2) }}:</label>
+                                    {{ substr($termName, -2) }}:</label>
                                 <div class="col">
                                     <input type="text" class="form-control" id="term" name="term"
                                         value="{{ old('term', $term->term ?? '') }}" readonly>
@@ -1374,7 +1324,7 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <button type="submit" value="Incluir" class="btn btn-primary">(+) Incluir
+                                <button type="submit" value="Incluir" class="btn btn-primary">Alterar 
                                     Questão</button>
                             </div>
                         </form>
@@ -1394,16 +1344,14 @@
                     data-bs-parent="#accordionFlushExample">
                     <div class="accordion-body">
                         <form id="questionFormLacunaCompletar" method="POST"
-                            action="{{ route('term_questions.store') }}" class="m-4 question-form"
+                            action="{{ route('term_questions.update') }}" class="m-4 question-form"
                             enctype="multipart/form-data">
                             @csrf
                             @method('POST')
                             <input type="hidden" name="niche_filter" value="{{ old('niche_filter', $niche_filter) }}">
                             <input type="hidden" name="bt_filter" value="{{ old('bt_filter', $bt_filter) }}">
                             <input type="hidden" name="term_id" value="{{ request('id', $term->id ?? '') }}">
-                            <input type="hidden" name="nextTermName" value="{{ $nextTermName }}">
                             <input type="hidden" name="question_type" value="Lacuna_Completar">
-                            <input type="hidden" name="term_order" value="{{ old('term_order', $term_order) }}">
                             {{-- Lacuna (ou Completar) --}}
                             <div class="border rounded row mb-2">
                                 <p class="mb-1"><strong>Lacuna (ou Completar)</strong> — Texto com espaços em branco que
@@ -1413,7 +1361,7 @@
                             </div>
                             <div class="row mb-2">
                                 <label for="term" class="col-sm-2 col-form-label fw-semibold">Questão
-                                    {{ substr($nextTermName, -2) }}:</label>
+                                    {{ substr($termName, -2) }}:</label>
                                 <div class="col">
                                     <input type="text" class="form-control" id="term" name="term"
                                         value="{{ old('term', $term->term ?? '') }}" readonly>
@@ -1579,7 +1527,7 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <button type="submit" value="Incluir" class="btn btn-primary">(+) Incluir
+                                <button type="submit" value="Incluir" class="btn btn-primary">Alterar 
                                     Questão</button>
                             </div>
                         </form>
@@ -1599,16 +1547,14 @@
                     data-bs-parent="#accordionFlushExample">
                     <div class="accordion-body">
                         <form id="questionFormOrdenacaoSeriacao" method="POST"
-                            action="{{ route('term_questions.store') }}" class="m-4 question-form"
+                            action="{{ route('term_questions.update') }}" class="m-4 question-form"
                             enctype="multipart/form-data">
                             @csrf
                             @method('POST')
                             <input type="hidden" name="niche_filter" value="{{ old('niche_filter', $niche_filter) }}">
                             <input type="hidden" name="bt_filter" value="{{ old('bt_filter', $bt_filter) }}">
                             <input type="hidden" name="term_id" value="{{ request('id', $term->id ?? '') }}">
-                            <input type="hidden" name="nextTermName" value="{{ $nextTermName }}">
                             <input type="hidden" name="question_type" value="Ordenacao_Seriacao">
-                            <input type="hidden" name="term_order" value="{{ old('term_order', $term_order) }}">
                             {{-- Ordenação ou Seriação --}}
                             <div class="border rounded row mb-2">
                                 <p class="mb-1"><strong>Ordenação ou Seriação</strong> — O aluno deve colocar itens ou
@@ -1619,7 +1565,7 @@
                             </div>
                             <div class="row mb-2">
                                 <label for="term" class="col-sm-2 col-form-label fw-semibold">Questão
-                                    {{ substr($nextTermName, -2) }}:</label>
+                                    {{ substr($termName, -2) }}:</label>
                                 <div class="col">
                                     <input type="text" class="form-control" id="term" name="term"
                                         value="{{ old('term', $term->term ?? '') }}" readonly>
@@ -1785,7 +1731,7 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <button type="submit" value="Incluir" class="btn btn-primary">(+) Incluir
+                                <button type="submit" value="Incluir" class="btn btn-primary">Alterar 
                                     Questão</button>
                             </div>
                         </form>
@@ -1804,16 +1750,14 @@
                     data-bs-parent="#accordionFlushExample">
                     <div class="accordion-body">
                         <form id="questionFormInterpretacao" method="POST"
-                            action="{{ route('term_questions.store') }}" class="m-4 question-form"
+                            action="{{ route('term_questions.update') }}" class="m-4 question-form"
                             enctype="multipart/form-data">
                             @csrf
                             @method('POST')
                             <input type="hidden" name="niche_filter" value="{{ old('niche_filter', $niche_filter) }}">
                             <input type="hidden" name="bt_filter" value="{{ old('bt_filter', $bt_filter) }}">
                             <input type="hidden" name="term_id" value="{{ request('id', $term->id ?? '') }}">
-                            <input type="hidden" name="nextTermName" value="{{ $nextTermName }}">
                             <input type="hidden" name="question_type" value="Interpretacao">
-                            <input type="hidden" name="term_order" value="{{ old('term_order', $term_order) }}">
                             {{-- Interpretação --}}
                             <div class="border rounded row mb-2">
                                 <p class="mb-1"><strong>Interpretação</strong> — Baseada na análise de um texto,
@@ -1824,7 +1768,7 @@
                             </div>
                             <div class="row mb-2">
                                 <label for="term" class="col-sm-2 col-form-label fw-semibold">Questão
-                                    {{ substr($nextTermName, -2) }}:</label>
+                                    {{ substr($termName, -2) }}:</label>
                                 <div class="col">
                                     <input type="text" class="form-control" id="term" name="term"
                                         value="{{ old('term', $term->term ?? '') }}" readonly>
@@ -1990,7 +1934,7 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <button type="submit" value="Incluir" class="btn btn-primary">(+) Incluir
+                                <button type="submit" value="Incluir" class="btn btn-primary">Alterar 
                                     Questão</button>
                             </div>
                         </form>
@@ -1999,6 +1943,47 @@
             </div>
         </div>
     </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                Questão: {{ substr($term->term, -5) }} - <strong>{{ $nameBT }}</strong>
+            </div>
+            <div class="card-body">
+                {{-- <p class="mb-2"><strong>Enunciado:</strong></p> --}}
+                <div class="border rounded p-2 bg-light mb-3">{!! $statement ?: '<span class="text-muted">Sem enunciado cadastrado.</span>' !!}</div>
+
+                {{-- <p class="mb-2"><strong>Alternativas:</strong></p> --}}
+                <ul class="list-group mb-3">
+                    <li class="list-group-item"><strong>A)</strong> {{ $alternative_1 ?: '---' }}</li>
+                    <li class="list-group-item"><strong>B)</strong> {{ $alternative_2 ?: '---' }}</li>
+                    <li class="list-group-item"><strong>C)</strong> {{ $alternative_3 ?: '---' }}</li>
+                    <li class="list-group-item"><strong>D)</strong> {{ $alternative_4 ?: '---' }}</li>
+                </ul>
+
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#answer-details-{{ $idTermo }}" aria-expanded="false"
+                    aria-controls="answer-details-{{ $idTermo }}">
+                    Ver Resposta
+                </button>
+
+                <div id="answer-details-{{ $idTermo }}" class="collapse mt-3">
+                    <div class="border rounded p-3 bg-light">
+                        <p class="mb-2"><strong>Opção correta:</strong> {{ $correct_option ?: '-' }}</p>
+                        {{-- <p class="mb-1"><strong>Explicações:</strong></p> --}}
+                        <ul class="mb-0">
+                            <li><strong>A:</strong> {{ $expl_alt_1 ?: '---' }}</li>
+                            <li><strong>B:</strong> {{ $expl_alt_2 ?: '---' }}</li>
+                            <li><strong>C:</strong> {{ $expl_alt_3 ?: '---' }}</li>
+                            <li><strong>D:</strong> {{ $expl_alt_4 ?: '---' }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
 
     <script>
         function initStatementEditors() {

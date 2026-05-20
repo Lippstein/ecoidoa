@@ -41,23 +41,63 @@
                                 61,62,63,64,65,66,67,68,69,70,
                                 71,72,73,74,75,76,77,78,79,80
                             ];
-                $lotteryNumbers = isset($data['lotteryNumbers']) ? (array) $data['lotteryNumbers'] : [1,2,3,4,5];
-                $availableBalance = isset($data['availableBalance']) ? $data['availableBalance'] : 'Saldo não cadastrado';
-                $totalCredits = isset($data['totalCredits']) ? $data['totalCredits'] : 'Total de Créditos'; 
+                $lotteryNumbersUser = isset($data['lotteryNumbersUser']) ? (array) $data['lotteryNumbersUser'] : [1,2,3,4,5];
+                $availableBalance = isset($data['availableBalance']) ? $data['availableBalance'] : 100;
+                $totalCredits = isset($data['totalCredits']) ? $data['totalCredits'] : 0; 
                 $indebtedUsers = isset($data['indebtedUsers']) ? $data['indebtedUsers'] : 'Usuários Devedores';
-                $totalDebts = isset($data['totalDebts']) ? $data['totalDebts'] : 'Total de Débitos'; 
+                $totalDebts = isset($data['totalDebts']) ? $data['totalDebts'] : 0; 
                 $creditorUsers = isset($data['creditorUsers']) ? $data['creditorUsers'] : 'Usuários Credores';
                 $results = isset($data['results']) ? $data['results'] : 'Resultados não cadastrados';
-                $lotteryNumbers = old('lotteryNumbers', $lotteryNumbers);
-                $lotteryNumbers = is_array($lotteryNumbers) ? $lotteryNumbers : array_map('trim', explode(',', (string) $lotteryNumbers));
-                $lotteryNumbers = array_values(array_slice(array_map('intval', $lotteryNumbers), 0, 5));
-                $availableBalance = old('availableBalance', $data['availableBalance'] ?? '');
-                $totalCredits = old('totalCredits', $data['totalCredits'] ?? '');
+                $maintenance = isset($data['maintenance']) ? $data['maintenance'] : 0;
+                $lotteryNumbersUser = old('lotteryNumbersUser', $lotteryNumbersUser);
+                $lotteryNumbersUser = is_array($lotteryNumbersUser) ? $lotteryNumbersUser : array_map('trim', explode(',', (string) $lotteryNumbersUser));
+                $lotteryNumbersUser = array_values(array_slice(array_map('intval', $lotteryNumbersUser), 0, 5));
+                $availableBalance = old('availableBalance', $data['availableBalance'] ?? 100);
+                $totalCredits = old('totalCredits', $data['totalCredits'] ?? 0);
                 $indebtedUsers = old('indebtedUsers', $data['indebtedUsers'] ?? '');
-                $totalDebts = old('totalDebts', $data['totalDebts'] ?? '');
+                $totalDebts = old('totalDebts', $data['totalDebts'] ?? 0);
                 $creditorUsers = old('creditorUsers', $data['creditorUsers'] ?? '');
                 $results = old('results', $data['results'] ?? '');
+                $maintenance = old('maintenance', $data['maintenance'] ?? 0);
 
+                $moneyToFloat = static function ($value): float {
+                    if (!is_string($value)) {
+                        return (float) $value;
+                    }
+
+                    $normalized = str_replace(['R$', ' '], '', trim($value));
+                    $hasComma = str_contains($normalized, ',');
+                    $hasDot = str_contains($normalized, '.');
+
+                    // Aceita "1234.56", "1.234,56" e "1234,56".
+                    if ($hasComma && $hasDot) {
+                        $lastComma = strrpos($normalized, ',');
+                        $lastDot = strrpos($normalized, '.');
+
+                        if ($lastComma !== false && $lastDot !== false && $lastComma > $lastDot) {
+                            $normalized = str_replace('.', '', $normalized);
+                            $normalized = str_replace(',', '.', $normalized);
+                        } else {
+                            $normalized = str_replace(',', '', $normalized);
+                        }
+                    } elseif ($hasComma) {
+                        $normalized = str_replace('.', '', $normalized);
+                        $normalized = str_replace(',', '.', $normalized);
+                    } else {
+                        $normalized = str_replace(',', '', $normalized);
+                    }
+
+                    return (float) $normalized;
+                };
+
+                $formatCurrency = static function ($value) use ($moneyToFloat): string {
+                    return 'R$ ' . number_format($moneyToFloat($value), 2, ',', '.');
+                };
+
+                $maintenanceDisplay = $formatCurrency($maintenance);
+                $availableBalanceDisplay = $formatCurrency($availableBalance);
+                $totalCreditsDisplay = $formatCurrency($totalCredits);
+                $totalDebtsDisplay = $formatCurrency($totalDebts);
             @endphp
             <div class="py-2 mb-4 rounded">
                 <hr style="margin:8px 0; opacity:.3;">
@@ -68,83 +108,78 @@
                     <div class="number-grid g-2">
                         @foreach ($listNumbers as $number)
                             <div>
-                                <button type="button" class="btn w-100 number-picker {{ in_array($number, $lotteryNumbers) ? 'btn-primary' : 'btn-outline-secondary' }}" data-number="{{ $number }}" disabled>{{ $number }}</button>
+                                <button type="button" class="btn w-100 number-picker {{ in_array($number, $lotteryNumbersUser) ? 'btn-primary' : 'btn-outline-secondary' }}" data-number="{{ $number }}">{{ $number }}</button>
                             </div>                            
                         @endforeach
                     </div>
-                    <small id="lotteryNumbersCounter" class="form-text text-muted d-block mt-2">Selecionados: 0/5</small>
+                    <small id="lotteryNumbersCounter" class="form-text text-muted d-block mt-2">Selecionados: {{ count($lotteryNumbersUser) }}/5</small>
                     <div id="lotteryNumbersLimitWarning" class="alert alert-warning py-1 px-2 mt-2 mb-0 d-none" role="alert">
                         Você pode selecionar no máximo 5 números.
                     </div>
                 </div>
             </div>
 
-
-
-
             <div class="row mb-2">
-                <label  class="col-sm-2 col-form-label" for="lotteryNumbers"><strong>Números Escolhidos:</strong></label>
+                <label  class="col-sm-2 col-form-label" for="lotteryNumbersUser"><strong>Números Escolhidos:</strong></label>
                 <div class="col-sm-8">
                     <div class="row g-2">
                         <div class="col">
-                            <input type="number" class="form-control readonly-field bg-info text-white" min="1" max="80" step="1" id="lotteryNumbers_0" name="lotteryNumbers[]" value="{{ $lotteryNumbers[0] ?? '' }}" readonly required autofocus>
+                            <input type="number" class="form-control readonly-field bg-info text-white" min="1" max="80" step="1" id="lotteryNumbersUser_0" name="lotteryNumbersUser[]" value="{{ $lotteryNumbersUser[0] ?? '' }}" readonly required>
                         </div>
                         <div class="col">
-                            <input type="number" class="form-control readonly-field bg-info text-white" min="1" max="80" step="1" id="lotteryNumbers_1" name="lotteryNumbers[]" value="{{ $lotteryNumbers[1] ?? '' }}" readonly required>
+                            <input type="number" class="form-control readonly-field bg-info text-white" min="1" max="80" step="1" id="lotteryNumbersUser_1" name="lotteryNumbersUser[]" value="{{ $lotteryNumbersUser[1] ?? '' }}" readonly required>
                         </div>
                         <div class="col">
-                            <input type="number" class="form-control readonly-field bg-info text-white" min="1" max="80" step="1" id="lotteryNumbers_2" name="lotteryNumbers[]" value="{{ $lotteryNumbers[2] ?? '' }}" readonly required>
+                            <input type="number" class="form-control readonly-field bg-info text-white" min="1" max="80" step="1" id="lotteryNumbersUser_2" name="lotteryNumbersUser[]" value="{{ $lotteryNumbersUser[2] ?? '' }}" readonly required>
                         </div>
                         <div class="col">
-                            <input type="number" class="form-control readonly-field bg-info text-white" min="1" max="80" step="1" id="lotteryNumbers_3" name="lotteryNumbers[]" value="{{ $lotteryNumbers[3] ?? '' }}" readonly required>
+                            <input type="number" class="form-control readonly-field bg-info text-white" min="1" max="80" step="1" id="lotteryNumbersUser_3" name="lotteryNumbersUser[]" value="{{ $lotteryNumbersUser[3] ?? '' }}" readonly required>
                         </div>
                         <div class="col">
-                            <input type="number" class="form-control readonly-field bg-info text-white" min="1" max="80" step="1" id="lotteryNumbers_4" name="lotteryNumbers[]" value="{{ $lotteryNumbers[4] ?? '' }}" readonly required>
+                            <input type="number" class="form-control readonly-field bg-info text-white" min="1" max="80" step="1" id="lotteryNumbersUser_4" name="lotteryNumbersUser[]" value="{{ $lotteryNumbersUser[4] ?? '' }}" readonly required>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="row mb-2">
-                <label  class="col-sm-2 col-form-label" for="availableBalance"><strong>Saldo Disponível:</strong></label>
-                <div class="col-sm-8">
-                    <input type="number" class="form-control readonly-field bg-info text-white" id="availableBalance" name="availableBalance" value="{{ old('availableBalance', $availableBalance) }}" readonly required>
+                <label  class="col-sm-2 col-form-label" for="maintenance"><strong>Manutenção:</strong></label>
+                <div class="col-sm-3">
+                    <input type="text" inputmode="decimal" class="form-control readonly-field bg-info text-white" id="maintenance" name="maintenance" value="{{ $maintenanceDisplay }}" readonly>
                 </div>
+            </div>
+
+            <div class="row mb-2">
+                <label  class="col-sm-2 col-form-label" for="availableBalance"><strong>Saldo Disponível:</strong></label>
+                <div class="col-sm-3">
+                    <input type="text" inputmode="decimal" class="form-control readonly-field bg-info text-white" id="availableBalance" name="availableBalance" value="{{ $availableBalanceDisplay }}" readonly>
+                </div>
+                {{-- <div class="col-sm-5">
+                    <a href="{{ route('usersDataFlex_results.show', ['udf_id' => $userDataFlex->id]) }}" class="btn btn-link p-0 readonly-field bg-info text-white" >
+                        {{ 'Resultados de todos os Rateios' }}
+                    </a>
+                </div> --}}
             </div>
             <div class="row mb-2">
                 <label  class="col-sm-2 col-form-label" for="totalCredits"><strong>Total de Créditos:</strong></label>
-                <div class="col-sm-8">
-                    <input type="number" class="form-control readonly-field bg-info text-white" id="totalCredits" name="totalCredits" value="{{ old('totalCredits', $totalCredits) }}" readonly required>
+                <div class="col-sm-3">
+                    <input type="text" inputmode="decimal" class="form-control readonly-field bg-info text-white" id="totalCredits" name="totalCredits" value="{{ $totalCreditsDisplay }}" readonly>
                 </div>
-            </div>
-            <div class="row mb-2">
-                <label  class="col-sm-2 col-form-label" for="indebtedUsers"><strong>Usuários Devedores:</strong></label>
-                <div class="col-sm-8">
-                    <a href="{{ 'route usersDataFlex_indebtedUsers.show' }}" class="btn btn-link p-0 readonly-field bg-info text-white" >
-                        {{ 'Fiéis depositários do Meu Crédito' }}
+                {{-- <div class="col-sm-5">
+                    <a href="{{ route('usersDataFlex_indebtedUsers.show', ['udf_id' => $userDataFlex->id]) }}" class="btn btn-link p-0 readonly-field bg-info text-white" >
+                        {{ 'Devedores dos meus Créditos' }}
                     </a>
-                </div>
+                </div> --}}
             </div>
             <div class="row mb-2">
                 <label  class="col-sm-2 col-form-label" for="totalDebts"><strong>Total de Débitos:</strong></label>
-                <div class="col-sm-8">
-                    <input type="number" class="form-control readonly-field bg-info text-white" id="totalDebts" name="totalDebts" value="{{ old('totalDebts', $totalDebts) }}" readonly required>
+                <div class="col-sm-3">
+                    <input type="text" inputmode="decimal" class="form-control readonly-field bg-info text-white" id="totalDebts" name="totalDebts" value="{{ $totalDebtsDisplay }}" readonly>
                 </div>
-            </div>
-            <div class="row mb-2">
-                <label  class="col-sm-2 col-form-label" for="creditorUsers"><strong>Usuários Credores:</strong></label>
-                <div class="col-sm-8">
-                    <a href="{{ 'route usersDataFlex_creditorUsers.show' }}" class="btn btn-link p-0 readonly-field bg-info text-white" >
-                        {{ 'Usuários Credores dos meus Débitos' }}
+                {{-- <div class="col-sm-5">
+                    <a href="{{ route('usersDataFlex_creditorUsers.show', ['udf_id' => $userDataFlex->id]) }}" class="btn btn-link p-0 readonly-field bg-info text-white" >
+                        {{ 'Credores dos meus Débitos' }}
                     </a>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <label  class="col-sm-2 col-form-label" for="results"><strong>Resultados:</strong></label>
-                <div class="col-sm-8">
-                    <a href="{{ 'route usersDataFlex_results.show' }}" class="btn btn-link p-0 readonly-field bg-info text-white" >
-                        {{ 'Ver o Resultado de todos os Rateios' }}
-                    </a>
-                </div>
+                </div> --}}
             </div>
             <div class="py-2 mb-4 rounded">
                 <hr style="margin:8px 0; opacity:.3;">
@@ -153,6 +188,122 @@
                 <button type="submit" class="btn btn-primary">Atualizar</button>
             </div>
         </form>
+
+        <div class="accordion accordion-flush" id="accordionFlushExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                <strong>Lista de todos os Rateios do Usuário ({{ $user->name }} - Perfil ID: {{ $userDataFlex->id }} - Niche ID: {{ $userDataFlex->niche_id }})</strong>
+            </button>
+            </h2>
+            <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                <div class="accordion-body">
+                    @php
+                        $formatMoneyRateio = static fn ($value): string => 'R$ ' . number_format((float) $value, 2, ',', '.');
+                    @endphp
+
+                    @if (empty($userRateiosByNiche))
+                        <div class="alert alert-secondary mb-0">
+                            Este usuário ainda não aparece como participante em nenhum rateio.
+                        </div>
+                    @else
+                        @foreach ($userRateiosByNiche as $nicheIdRateio => $rateiosList)
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <strong>Nicho {{ $nicheIdRateio }}</strong>
+                                    <span class="text-muted">- {{ count($rateiosList) }} rateio(s)</span>
+                                </div>
+                                <div class="card-body">
+                                    @foreach ($rateiosList as $rateioEntry)
+                                        @php
+                                            $rateio = $rateioEntry['rateio'] ?? [];
+                                            $participant = $rateioEntry['participant'] ?? [];
+                                            $numbersUser = $rateioEntry['lotteryNumbersUser'] ?? [];
+                                            $numbersRateio = $rateioEntry['lotteryNumbersRateio'] ?? [];
+                                            $numbersRateioSet = array_flip($numbersRateio);
+                                            $numbersUserSet = array_flip($numbersUser);
+                                        @endphp
+
+                                        <div class="border rounded p-3 mb-3">
+                                            <div class="d-flex flex-wrap gap-3 mb-2">
+                                                <div><strong>Rateio:</strong> {{ $rateio['concourseCEFNumber'] ?? '-' }}</div>
+                                                <div><strong>Data:</strong> {{ $rateio['concourseCEFDate'] ?? '-' }}</div>
+                                                <div><strong>Termo:</strong> {{ $rateioEntry['term'] ?? '-' }} (ID {{ $rateioEntry['term_id'] ?? '-' }})</div>
+                                                <div><strong>Acertos:</strong> {{ $rateioEntry['hitsCount'] ?? 0 }}</div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-12 col-md-6 mb-2">
+                                                    <strong>Números do usuário (em destaque quando sorteado):</strong><br>
+                                                    @forelse ($numbersUser as $number)
+                                                        <span class="badge number-badge {{ isset($numbersRateioSet[$number]) ? 'bg-success' : 'bg-secondary' }}">{{ $number }}</span>
+                                                    @empty
+                                                        <span class="text-muted">Sem números informados.</span>
+                                                    @endforelse
+                                                </div>
+                                                <div class="col-12 col-md-6 mb-2">
+                                                    <strong>Números do rateio:</strong><br>
+                                                    @forelse ($numbersRateio as $number)
+                                                        <span class="badge number-badge {{ isset($numbersUserSet[$number]) ? 'bg-success' : 'bg-dark' }}">{{ $number }}</span>
+                                                    @empty
+                                                        <span class="text-muted">Sem números sorteados.</span>
+                                                    @endforelse
+                                                </div>
+                                            </div>
+
+                                            {{-- <div class="mb-2">
+                                                <strong>Números do rateio:</strong><br>
+                                                @forelse ($numbersRateio as $number)
+                                                    <span class="badge number-badge {{ isset($numbersUserSet[$number]) ? 'bg-success' : 'bg-dark' }}">{{ $number }}</span>
+                                                @empty
+                                                    <span class="text-muted">Sem números sorteados.</span>
+                                                @endforelse
+                                            </div> --}}
+
+                                            <div class="row g-2">
+                                                <div class="col-md-3"><strong>Contribuição:</strong> {{ $formatMoneyRateio($participant['contribution'] ?? 0) }}</div>
+                                                <div class="col-md-3"><strong>Total Rateio:</strong> {{ $formatMoneyRateio($rateio['totalRateio'] ?? 0) }}</div>
+                                                <div class="col-md-3"><strong>Total Premio:</strong> {{ $formatMoneyRateio($rateio['totalPrize'] ?? 0) }}</div>
+                                            </div>
+                                            <div class="row g-2">
+                                                <div class="col-md-3"><strong>Acum. Próximo:</strong> {{ $formatMoneyRateio($rateio['availableBalance_Next'] ?? 0) }}</div>
+                                                <div class="col-md-3"><strong>Acum. Final 5:</strong> {{ $formatMoneyRateio($rateio['availableBalance_Final5'] ?? 0) }}</div>
+                                                <div class="col-md-3"><strong>Acum. Especial:</strong> {{ $formatMoneyRateio($rateio['availableBalance_Special'] ?? 0) }}</div>
+                                            </div>
+                                            <div class="row g-2">
+                                                <div class="col-md-3"><strong>5 acertos:</strong> {{ count($rateio['5_hits'] ?? []) }} Ganhador(es)</div>
+                                                <div class="col-md-3"><strong>{{ count($rateio['5_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 5 acertos:</strong> {{ $formatMoneyRateio(count($rateio['5_hits'] ?? []) > 0 ? $rateio['value_5_hits']/count($rateio['5_hits']) : $rateio['value_5_hits'] ?? 0) }}</div>
+                                            </div>
+                                            <div class="row g-2">
+                                                <div class="col-md-3"><strong>4 acertos:</strong> {{ count($rateio['4_hits'] ?? []) }} Ganhador(es)</div>
+                                                <div class="col-md-3"><strong>{{ count($rateio['4_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 4 acertos:</strong> {{ $formatMoneyRateio(count($rateio['4_hits'] ?? []) > 0 ? $rateio['value_4_hits']/count($rateio['4_hits']) : $rateio['value_4_hits'] ?? 0) }}</div>
+                                            </div>
+                                            <div class="row g-2">
+                                                <div class="col-md-3"><strong>3 acertos:</strong> {{ count($rateio['3_hits'] ?? []) }} Ganhador(es)</div>
+                                                <div class="col-md-3"><strong>{{ count($rateio['3_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 3 acertos:</strong> {{ $formatMoneyRateio(count($rateio['3_hits'] ?? []) > 0 ? $rateio['value_3_hits']/count($rateio['3_hits']) : $rateio['value_3_hits'] ?? 0) }}</div>
+                                            </div>
+                                            <div class="row g-2">
+                                                <div class="col-md-3"><strong>2 acertos:</strong> {{ count($rateio['2_hits'] ?? []) }} Ganhador(es)</div>
+                                                <div class="col-md-3"><strong>{{ count($rateio['2_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 2 acertos:</strong> {{ $formatMoneyRateio(count($rateio['2_hits'] ?? []) > 0 ? $rateio['value_2_hits']/count($rateio['2_hits']) : $rateio['value_2_hits'] ?? 0) }}</div>
+                                            </div>
+                                            <div class="row g-2">
+                                                <div class="col-md-3"><strong>1 acertos:</strong> {{ count($rateio['1_hits'] ?? []) }} Ganhador(es)</div>
+                                                <div class="col-md-3"><strong>{{ count($rateio['1_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 1 acertos:</strong> {{ $formatMoneyRateio(count($rateio['1_hits'] ?? []) > 0 ? $rateio['value_1_hits']/count($rateio['1_hits']) : $rateio['value_1_hits'] ?? 0) }}</div>
+                                            </div>
+
+                                            {{-- <details class="mt-3">
+                                                <summary><strong>Ver todas as informações do rateio (JSON completo)</strong></summary>
+                                                <pre class="rateio-json mb-0 mt-2">{{ json_encode($rateio, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</pre>
+                                            </details> --}}
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
+                </div>
+            </div>
+        </div>
+        </div>
     </div>
 
     <style>
@@ -169,6 +320,23 @@
         justify-content: center;
         text-align: center;
     }
+
+    .number-badge {
+        font-size: 0.85rem;
+        margin-right: 4px;
+        margin-bottom: 4px;
+        min-width: 36px;
+    }
+
+    .rateio-json {
+        max-height: 240px;
+        overflow: auto;
+        padding: 10px;
+        border-radius: 8px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        font-size: 0.82rem;
+    }
     </style>
 
     <script>
@@ -184,7 +352,7 @@
             }
         });
 
-        const lotteryFields = document.querySelectorAll('[id^="lotteryNumbers_"]');
+        const lotteryFields = document.querySelectorAll('[id^="lotteryNumbersUser_"]');
         const isReadonly = lotteryFields.length > 0 ? lotteryFields[0].hasAttribute('readonly') : true;
         document.querySelectorAll('.number-picker').forEach(button => {
             button.disabled = isReadonly;
@@ -192,8 +360,78 @@
     }
 
     (function () {
+        const profileForm = document.querySelector('form[action*="usersDataFlex_update"]');
+        const moneyFieldIds = ['maintenance', 'availableBalance', 'totalCredits', 'totalDebts'];
+
+        function parseCurrencyToNumeric(value) {
+            const raw = String(value ?? '')
+                .replace(/\s+/g, '')
+                .replace('R$', '');
+
+            const hasComma = raw.includes(',');
+            const hasDot = raw.includes('.');
+            let cleaned = raw;
+
+            // Aceita "1234.56", "1.234,56" e "1234,56".
+            if (hasComma && hasDot) {
+                const lastComma = raw.lastIndexOf(',');
+                const lastDot = raw.lastIndexOf('.');
+                if (lastComma > lastDot) {
+                    cleaned = raw.replace(/\./g, '').replace(',', '.');
+                } else {
+                    cleaned = raw.replace(/,/g, '');
+                }
+            } else if (hasComma) {
+                cleaned = raw.replace(/\./g, '').replace(',', '.');
+            } else {
+                cleaned = raw.replace(/,/g, '');
+            }
+
+            const number = parseFloat(cleaned);
+            return Number.isFinite(number) ? number.toFixed(2) : '0.00';
+        }
+
+        function formatCurrencyBRL(value) {
+            const numeric = parseCurrencyToNumeric(value);
+            const [intPart, decimalPart] = numeric.split('.');
+            const intWithThousands = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            return `R$ ${intWithThousands},${decimalPart}`;
+        }
+
+        moneyFieldIds.forEach(id => {
+            const field = document.getElementById(id);
+            if (!field) {
+                return;
+            }
+
+            field.value = formatCurrencyBRL(field.value);
+
+            field.addEventListener('focus', () => {
+                if (field.hasAttribute('readonly')) {
+                    return;
+                }
+                field.value = parseCurrencyToNumeric(field.value).replace('.', ',');
+            });
+
+            field.addEventListener('blur', () => {
+                field.value = formatCurrencyBRL(field.value);
+            });
+        });
+
+        if (profileForm) {
+            profileForm.addEventListener('submit', () => {
+                moneyFieldIds.forEach(id => {
+                    const field = document.getElementById(id);
+                    if (!field) {
+                        return;
+                    }
+                    field.value = parseCurrencyToNumeric(field.value);
+                });
+            });
+        }
+
         const numberButtons = Array.from(document.querySelectorAll('.number-picker'));
-        const lotteryFields = Array.from(document.querySelectorAll('[id^="lotteryNumbers_"]'));
+        const lotteryFields = Array.from(document.querySelectorAll('[id^="lotteryNumbersUser_"]'));
         const counter = document.getElementById('lotteryNumbersCounter');
         const limitWarning = document.getElementById('lotteryNumbersLimitWarning');
         let warningTimeoutId = null;

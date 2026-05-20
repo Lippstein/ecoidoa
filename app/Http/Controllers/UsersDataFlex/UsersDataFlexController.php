@@ -84,7 +84,101 @@ class UsersDataFlexController extends Controller
         $userDataFlex = UsersDataFlex::findOrFail($id);
         $user = \App\Models\User::findOrFail($userDataFlex->user_id);
         $niche = \App\Models\Niche::findOrFail($userDataFlex->niche_id);
-        return view("usersDataFlex.niche_{$niche->id}.usersDataFlex_edit", compact('userDataFlex', 'user','niche'));
+
+        $userRateiosByNiche = [];
+        $terms = \App\Models\Term::select('id', 'id_niche', 'term', 'definition', 'created_at', 'term_data')
+            ->whereNotNull('term_data')
+            ->get();
+
+        foreach ($terms as $term) {
+            $termData = $term->term_data;
+            if (is_string($termData)) {
+                $decoded = json_decode($termData, true);
+                $termData = is_array($decoded) ? $decoded : [];
+            }
+
+            if (!is_array($termData)) {
+                continue;
+            }
+
+            $rateios = $termData['rateios'] ?? [];
+            if (!is_array($rateios)) {
+                continue;
+            }
+
+            foreach ($rateios as $rateioIndex => $rateio) {
+                if (!is_array($rateio)) {
+                    continue;
+                }
+
+                $participants = $rateio['participants'] ?? [];
+                if (!is_array($participants)) {
+                    continue;
+                }
+
+                foreach ($participants as $participant) {
+                    if (!is_array($participant)) {
+                        continue;
+                    }
+
+                    if ((int) ($participant['user_id'] ?? 0) !== (int) $userDataFlex->user_id) {
+                        continue;
+                    }
+
+                    $lotteryNumbersUser = $participant['lotteryNumbersUser'] ?? ($participant['lotteryNumbers'] ?? []);
+                    if (is_string($lotteryNumbersUser)) {
+                        $lotteryNumbersUser = array_map('trim', explode(',', $lotteryNumbersUser));
+                    }
+
+                    $lotteryNumbersUser = array_values(array_filter(
+                        array_map('intval', is_array($lotteryNumbersUser) ? $lotteryNumbersUser : []),
+                        fn ($number) => $number >= 1 && $number <= 80
+                    ));
+                    sort($lotteryNumbersUser);
+
+                    $lotteryNumbersRateio = array_values(array_map(
+                        'intval',
+                        is_array($rateio['lotteryNumbers'] ?? null) ? $rateio['lotteryNumbers'] : []
+                    ));
+                    sort($lotteryNumbersRateio);
+
+                    $hitsCount = count(array_intersect($lotteryNumbersUser, $lotteryNumbersRateio));
+
+                    $userRateiosByNiche[$term->id_niche][] = [
+                        'term_id' => $term->id,
+                        'term' => $term->term,
+                        'definition' => $term->definition,
+                        'term_created_at' => $term->created_at,
+                        'rateio_index' => $rateioIndex,
+                        'rateio' => $rateio,
+                        'participant' => $participant,
+                        'lotteryNumbersUser' => $lotteryNumbersUser,
+                        'lotteryNumbersRateio' => $lotteryNumbersRateio,
+                        'hitsCount' => $hitsCount,
+                    ];
+                }
+            }
+        }
+
+        if (!empty($userRateiosByNiche)) {
+            ksort($userRateiosByNiche);
+            foreach ($userRateiosByNiche as &$rateiosList) {
+                usort($rateiosList, function ($a, $b) {
+                    $dateA = (string) ($a['rateio']['concourseCEFDate'] ?? '');
+                    $dateB = (string) ($b['rateio']['concourseCEFDate'] ?? '');
+                    if ($dateA !== $dateB) {
+                        return strcmp($dateB, $dateA);
+                    }
+
+                    $numberA = (int) ($a['rateio']['concourseCEFNumber'] ?? 0);
+                    $numberB = (int) ($b['rateio']['concourseCEFNumber'] ?? 0);
+                    return $numberB <=> $numberA;
+                });
+            }
+            unset($rateiosList);
+        }
+
+        return view("usersDataFlex.niche_{$niche->id}.usersDataFlex_edit", compact('userDataFlex', 'user', 'niche', 'userRateiosByNiche'));
     }
 
 
@@ -150,50 +244,28 @@ class UsersDataFlexController extends Controller
                     'ak4EMAFObs' => 'nullable|string|max:150'
                 ]);
         } elseif($idNiche == 2) {
-            $validated = $request->validate([
-                    'lotteryNumbers' => 'required|array|size:5',
-                    'availableBalance' => ['nullable', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
-                    'totalCredits' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
-                    'indebtedUsers' => 'required|string|max:150',
-                    'totalDebts' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
-                    'creditorUsers' => 'required|string|max:150',
-                    'results' => 'required|string|max:150'
-                ]);
+            // $validated = $request->validate([
+            //         'lotteryNumbers' => 'required|array|size:5',
+            //         'availableBalance' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
+            //         'totalCredits' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
+            //         'totalDebts' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
+            //     ]);
         } elseif($idNiche == 3) {
-            // $lotteryNumbers = isset($data['lotteryNumbers']) ? $data['lotteryNumbers'] : 'Números não cadastrados'; 
-            // $availableBalance = isset($data['availableBalance']) ? $data['availableBalance'] : 'Saldo não cadastrado';
-            // $totalCredits = isset($data['totalCredits']) ? $data['totalCredits'] : 'Total de Créditos'; 
-            // $indebtedUsers = isset($data['indebtedUsers']) ? $data['indebtedUsers'] : 'Usuários Devedores';
-            // $totalDebts = isset($data['totalDebts']) ? $data['totalDebts'] : 'Total de Débitos'; 
-            // $creditorUsers = isset($data['creditorUsers']) ? $data['creditorUsers'] : 'Usuários Credores';
-            // $results = isset($data['results']) ? $data['results'] : 'Resultados não cadastrados';
-
             $validated = $request->validate([
-                'lotteryNumbers' => 'required|array|size:5',
-                'availableBalance' => ['nullable', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
+                'maintenance' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
+                'lotteryNumbersUser' => 'required|array|size:5',
+                'availableBalance' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
                 'totalCredits' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
-                // 'indebtedUsers' => 'required|string|max:150',
-                'totalDebts' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
-                // 'creditorUsers' => 'required|string|max:150',
-                // 'results' => 'required|string|max:150'
+                'totalDebts' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/']
                 ]);
-        } elseif($idNiche == 4) {
-            // $lotteryNumbers = isset($data['lotteryNumbers']) ? $data['lotteryNumbers'] : 'Números não cadastrados'; 
-            // $availableBalance = isset($data['availableBalance']) ? $data['availableBalance'] : 'Saldo não cadastrado';
-            // $totalCredits = isset($data['totalCredits']) ? $data['totalCredits'] : 'Total de Créditos'; 
-            // $indebtedUsers = isset($data['indebtedUsers']) ? $data['indebtedUsers'] : 'Usuários Devedores';
-            // $totalDebts = isset($data['totalDebts']) ? $data['totalDebts'] : 'Total de Débitos'; 
-            // $creditorUsers = isset($data['creditorUsers']) ? $data['creditorUsers'] : 'Usuários Credores';
-            // $results = isset($data['results']) ? $data['results'] : 'Resultados não cadastrados';
 
+        } elseif($idNiche == 4) {
             $validated = $request->validate([
-                'lotteryNumbers' => 'required|array|size:5',
-                'availableBalance' => ['nullable', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
+                'maintenance' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
+                'lotteryNumbersUser' => 'required|array|size:5',
+                'availableBalance' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
                 'totalCredits' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
-                'indebtedUsers' => 'required|string|max:150',
-                'totalDebts' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
-                'creditorUsers' => 'required|string|max:150',
-                'results' => 'required|string|max:150'
+                'totalDebts' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/']
                 ]);
         } else {
             return redirect()->back()
