@@ -17,10 +17,15 @@ class UserController extends Controller
     public function listUsersForm(Request $request)
     {
         $userFilter = $request->input('user_filter');
+        $maxLevel = session('user_level', Auth::user()?->level);
 
-        $query = User::where('level', '<=', session('user_level'))
+        $query = User::query()
             ->orderBy('name')
             ->select('id', 'name', 'email', 'document_data');
+
+        if ($maxLevel !== null) {
+            $query->where('level', '<=', (int) $maxLevel);
+        }
 
         if (!empty($userFilter)) {
             $query->where(function ($q) use ($userFilter) {

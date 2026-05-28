@@ -101,7 +101,7 @@ class NicheSeeder extends Seeder
         'created_at' => now(),
         ]);
         Niche::create([
-        'niche' => 'UFCSPA:5',
+        'niche' => 'UFCSPA-5',
         'habitat_id' => 2,
         'niche_data' => json_encode
             (['description' => 'Nicho para rateio de recursos amigos da UFCSPA',
@@ -139,10 +139,10 @@ Cada membro pode ter somente uma série de 5 números.',
                          'rule5' => 'Premiação:
 O premio bruto corresponde a 100,00% da arrecadação. 
 Deste valor:
-• 45% são distribuídos entre os acertadores dos 5 números,
+• 50% são distribuídos entre os acertadores dos 5 números,
 • 15% entre os acertadores de 4 números,
 • 10% entre os acertadores de 3 números,
-• 10% entre os acertadores de 2 números,
+• 05% entre os acertadores de 2 números,
 • 10% acumulam para os Rateios de final 5,
 • 10% acumulam para o Rateio Especial de Junho de cada ano.',
                          'rule6' => 'Não havendo acertador em qualquer faixa de premiação, os valores acumulam para o concurso seguinte, nas respectivas faixas.',
@@ -163,7 +163,7 @@ Não existindo rateios premiados na quina, quadra, terno e duque, o valor é rat
         'created_at' => now(),
         ]);
         Niche::create([
-        'niche' => 'DIPP:5',
+        'niche' => 'DIPP-5',
         'habitat_id' => 2,
         'niche_data' => json_encode
             (['description' => 'Nicho para rateio de recursos amigos do Marcelo Dipp',
@@ -177,6 +177,52 @@ Não existindo rateios premiados na quina, quadra, terno e duque, o valor é rat
                           'city' => 'Cidade não cadastrada',
                          'state' => 'Estado não cadastrado',
                            'zip' => 'CEP não cadastrado',
+                       'country' => 'Brasil',
+                     'cellphone' => 'Celular não cadastrado',
+                         'phone' => 'Telefone não cadastrado',
+                          'site' => 'Site não cadastrado',
+                         'email' => 'Email não cadastrado',
+                      'whatsapp' => 'WhatsApp não cadastrado',
+                      'telegram' => 'Telegram não cadastrado',
+                      'facebook' => 'Facebook não cadastrado',
+                     'instagram' => 'Instagram não cadastrado',
+                    ],
+                    'rules' => [
+                         'rule0' => 'Regra 1 não cadastrada',
+                         'rule1' => 'Regra 2 não cadastrada',
+                         'rule2' => 'Regra 3 não cadastrada',
+                         'rule3' => 'Regra 4 não cadastrada',
+                         'rule4' => 'Regra 5 não cadastrada',
+                         'rule5' => 'Regra 6 não cadastrada',
+                         'rule6' => 'Regra 7 não cadastrada',
+                         'rule7' => 'Regra 8 não cadastrada',
+                         'rule8' => 'Regra 9 não cadastrada',
+                         'rule9' => 'Regra 10 não cadastrada'
+                    ],
+          ],
+            JSON_UNESCAPED_UNICODE),
+        'created_at' => now(),
+        ]);
+        Niche::create([
+        'niche' => 'IDOA-TES',
+        'habitat_id' => 3,
+        'niche_data' => json_encode
+            (['niche' => 'IDOA-TES',
+             'description' => 'Tesauro do IdoA',
+             'company_name' => 'Instituto de Filosofia do Antropoceno',
+               'trade_name' => 'IdoA',
+               'foundation' => 'Fundação não cadastrada',
+            'authorization1' => 'Autorização 1 não cadastrada',
+            'authorization2' => 'Autorização 2 não cadastrada',
+                     'cnpj' => 'CNPJ não cadastrado',
+                  'address' => [
+                        'street' => 'Rua não cadastrada',
+                        'number' => 'Número não cadastrado',
+                           'zip' => 'CEP não cadastrado',
+                  'neighborhood' => 'Centro',
+                      'locality' => 'Porto Alegre',
+                          'city' => 'Porto Alegre',
+                         'state' => 'Estado não cadastrado',
                        'country' => 'Brasil',
                      'cellphone' => 'Celular não cadastrado',
                          'phone' => 'Telefone não cadastrado',

@@ -249,19 +249,9 @@
                                                     @endforelse
                                                 </div>
                                             </div>
-
-                                            {{-- <div class="mb-2">
-                                                <strong>Números do rateio:</strong><br>
-                                                @forelse ($numbersRateio as $number)
-                                                    <span class="badge number-badge {{ isset($numbersUserSet[$number]) ? 'bg-success' : 'bg-dark' }}">{{ $number }}</span>
-                                                @empty
-                                                    <span class="text-muted">Sem números sorteados.</span>
-                                                @endforelse
-                                            </div> --}}
-
                                             <div class="row g-2">
                                                 <div class="col-md-3"><strong>Contribuição:</strong> {{ $formatMoneyRateio($participant['contribution'] ?? 0) }}</div>
-                                                <div class="col-md-3"><strong>Total Rateio:</strong> {{ $formatMoneyRateio($rateio['totalRateio'] ?? 0) }}</div>
+                                                <div class="col-md-3"><strong>Total Contribuições:</strong> {{ $formatMoneyRateio($rateio['totalRateio'] ?? 0) }}</div>
                                                 <div class="col-md-3"><strong>Total Premio:</strong> {{ $formatMoneyRateio($rateio['totalPrize'] ?? 0) }}</div>
                                             </div>
                                             <div class="row g-2">
@@ -271,23 +261,28 @@
                                             </div>
                                             <div class="row g-2">
                                                 <div class="col-md-3"><strong>5 acertos:</strong> {{ count($rateio['5_hits'] ?? []) }} Ganhador(es)</div>
-                                                <div class="col-md-3"><strong>{{ count($rateio['5_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 5 acertos:</strong> {{ $formatMoneyRateio(count($rateio['5_hits'] ?? []) > 0 ? $rateio['value_5_hits']/count($rateio['5_hits']) : $rateio['value_5_hits'] ?? 0) }}</div>
+                                                <div class="col-md-3"><strong>{{ count($rateio['5_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 5 acertos:</strong> {{ $formatMoneyRateio(count($rateio['5_hits'] ?? []) > 0 ? $rateio['value_5_hits']/count($rateio['5_hits']) : $rateio['value_5_hits'] ?? 0) }} </div>
+                                                <div class="col-md-3">{{ 'Total: (' . $formatMoneyRateio($rateio['value_5_hits'] ?? 0) . ')' }}</div>
                                             </div>
                                             <div class="row g-2">
                                                 <div class="col-md-3"><strong>4 acertos:</strong> {{ count($rateio['4_hits'] ?? []) }} Ganhador(es)</div>
-                                                <div class="col-md-3"><strong>{{ count($rateio['4_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 4 acertos:</strong> {{ $formatMoneyRateio(count($rateio['4_hits'] ?? []) > 0 ? $rateio['value_4_hits']/count($rateio['4_hits']) : $rateio['value_4_hits'] ?? 0) }}</div>
+                                                <div class="col-md-3"><strong>{{ count($rateio['4_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 4 acertos:</strong> {{ $formatMoneyRateio(count($rateio['4_hits'] ?? []) > 0 ? $rateio['value_4_hits']/count($rateio['4_hits']) : $rateio['value_4_hits'] ?? 0) }} </div>
+                                                <div class="col-md-3">{{ 'Total: (' . $formatMoneyRateio($rateio['value_4_hits'] ?? 0) . ')' }}</div>
                                             </div>
                                             <div class="row g-2">
                                                 <div class="col-md-3"><strong>3 acertos:</strong> {{ count($rateio['3_hits'] ?? []) }} Ganhador(es)</div>
-                                                <div class="col-md-3"><strong>{{ count($rateio['3_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 3 acertos:</strong> {{ $formatMoneyRateio(count($rateio['3_hits'] ?? []) > 0 ? $rateio['value_3_hits']/count($rateio['3_hits']) : $rateio['value_3_hits'] ?? 0) }}</div>
+                                                <div class="col-md-3"><strong>{{ count($rateio['3_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 3 acertos:</strong> {{ $formatMoneyRateio(count($rateio['3_hits'] ?? []) > 0 ? $rateio['value_3_hits']/count($rateio['3_hits']) : $rateio['value_3_hits'] ?? 0) }} </div>
+                                                <div class="col-md-3">{{ 'Total: (' . $formatMoneyRateio($rateio['value_3_hits'] ?? 0) . ')' }}</div>
                                             </div>
                                             <div class="row g-2">
                                                 <div class="col-md-3"><strong>2 acertos:</strong> {{ count($rateio['2_hits'] ?? []) }} Ganhador(es)</div>
-                                                <div class="col-md-3"><strong>{{ count($rateio['2_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 2 acertos:</strong> {{ $formatMoneyRateio(count($rateio['2_hits'] ?? []) > 0 ? $rateio['value_2_hits']/count($rateio['2_hits']) : $rateio['value_2_hits'] ?? 0) }}</div>
+                                                <div class="col-md-3"><strong>{{ count($rateio['2_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 2 acertos:</strong> {{ $formatMoneyRateio(count($rateio['2_hits'] ?? []) > 0 ? $rateio['value_2_hits']/count($rateio['2_hits']) : $rateio['value_2_hits'] ?? 0) }} </div>
+                                                <div class="col-md-3">{{ 'Total: (' . $formatMoneyRateio($rateio['value_2_hits'] ?? 0) . ')' }}</div>
                                             </div>
                                             <div class="row g-2">
                                                 <div class="col-md-3"><strong>1 acertos:</strong> {{ count($rateio['1_hits'] ?? []) }} Ganhador(es)</div>
-                                                <div class="col-md-3"><strong>{{ count($rateio['1_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 1 acertos:</strong> {{ $formatMoneyRateio(count($rateio['1_hits'] ?? []) > 0 ? $rateio['value_1_hits']/count($rateio['1_hits']) : $rateio['value_1_hits'] ?? 0) }}</div>
+                                                <div class="col-md-3"><strong>{{ count($rateio['1_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 1 acertos:</strong> {{ $formatMoneyRateio(count($rateio['1_hits'] ?? []) > 0 ? $rateio['value_1_hits']/count($rateio['1_hits']) : $rateio['value_1_hits'] ?? 0) }} </div>
+                                                <div class="col-md-3">{{ 'Total: (' . $formatMoneyRateio($rateio['value_1_hits'] ?? 0) . ')' }}</div>
                                             </div>
 
                                             {{-- <details class="mt-3">

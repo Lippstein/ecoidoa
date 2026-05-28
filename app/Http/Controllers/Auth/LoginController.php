@@ -26,9 +26,13 @@ class LoginController extends Controller
         $credentials = $request->validate([
             'email'    => ['required', 'email'],
             'password' => ['required'],
+            'remember' => ['nullable', 'boolean'],
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        $remember = (bool) ($credentials['remember'] ?? false);
+        unset($credentials['remember']);
+
+        if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
             // Salva o campo 'level' do usuário autenticado na variável de sessão user_level
             $request->session()->put('user_level', Auth::user()->level);

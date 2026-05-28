@@ -87,9 +87,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/usersDataFlex/usersDataFlex_destroy/{id}', [UsersDataFlexController::class, 'destroyUsersDataFlexForm'])->name('usersDataFlex_destroy.show');
     Route::put('/usersDataFlex/usersDataFlex_update/{id}', [UsersDataFlexController::class, 'updateUsersDataFlexForm'])->name('usersDataFlex_update.show');
     Route::get('/pdf_historico/{id}/{nivelEnsino}', [PdfController::class, 'historico'])->name('pdf.historico');
-
-
-
     
     Route::match(['get', 'post'], '/tesauro/tesauro_list', [TesauroController::class, 'listTesauroForm'])->name('tesauro_list.show');
     Route::get('/tesauro/tesauro_filter', [TesauroController::class, 'filterTesauroForm'])->name('tesauro_filter.show');
@@ -119,7 +116,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tesauro/term_rateios/{niche_filter}/{bt_filter}/{id}/{term_order}', [TesauroController::class, 'createTermRateiosForm'])->name('term_rateios.create');
     Route::post('/tesauro/term_rateios', [TesauroController::class, 'storeTermRateiosForm'])->name('term_rateios.store');
 
-    Route::get('/usersDataFlex/indebtedUsers/{udf_id}', [UsersDataFlexController::class, 'showIndebtedUsersForm'])->name('usersDataFlex_indebtedUsers.show');
-    Route::get('/usersDataFlex_creditorUsers/{udf_id}', [UsersDataFlexController::class, 'showCreditorUsersForm'])->name('usersDataFlex_creditorUsers.show');
-    Route::get('/usersDataFlex/results/{udf_id}', [UsersDataFlexController::class, 'showResultsForm'])->name('usersDataFlex_results.show');
+    // Route::get('/usersDataFlex/indebtedUsers/{udf_id}', [UsersDataFlexController::class, 'showIndebtedUsersForm'])->name('usersDataFlex_indebtedUsers.show');
+    // Route::get('/usersDataFlex/creditorUsers/{udf_id}', [UsersDataFlexController::class, 'showCreditorUsersForm'])->name('usersDataFlex_creditorUsers.show');
+    // Route::get('/usersDataFlex/results/{udf_id}', [UsersDataFlexController::class, 'showResultsForm'])->name('usersDataFlex_results.show');
 });

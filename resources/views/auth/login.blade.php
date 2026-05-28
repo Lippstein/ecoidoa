@@ -17,8 +17,15 @@
             <input type="password" class="form-control" id="password" name="password" required>
         </div>
         <div class="mb-3 form-check">
-            <input type="checkbox" class="form-check-input" id="exampleCheck1">
-            <label class="form-check-label" for="exampleCheck1">Check me out</label>
+            <input
+                type="checkbox"
+                class="form-check-input"
+                id="remember"
+                name="remember"
+                value="1"
+                {{ old('remember') ? 'checked' : '' }}
+            >
+            <label class="form-check-label" for="remember">Lembrar de mim</label>
         </div>
         <button type="submit" class="btn btn-primary">Entrar</button>
         <div class="form-text">

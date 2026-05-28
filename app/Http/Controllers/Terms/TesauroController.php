@@ -547,7 +547,6 @@ class TesauroController extends Controller
         }
 
         $validated = $validator->validated();
-        $roundMoney = static fn ($value): float => round((float) $value, 2);
         $validated['lotteryNumbers'] = array_map('intval', $validated['lotteryNumbers']);
 
         // O termo da tabela terms vem do nextTermName enviado pelo form.
@@ -560,11 +559,11 @@ class TesauroController extends Controller
             'lotteryNumbers' => $validated['lotteryNumbers'] ?? [],
             'concourseCEFNumber' => $validated['concourseCEFNumber'] ?? '',
             'concourseCEFDate' => $validated['concourseCEFDate'] ?? '',
-            'totalRateio' => $roundMoney($validated['totalRateio'] ?? 0),
-            'totalPrize' => $roundMoney($validated['totalPrize'] ?? 0),
-            'availableBalance_Next' => $roundMoney($validated['availableBalance_Next'] ?? 0),
-            'availableBalance_Final5' => $roundMoney($validated['availableBalance_Final5'] ?? 0),
-            'availableBalance_Special' => $roundMoney($validated['availableBalance_Special'] ?? 0),
+            'totalRateio' => (float) ($validated['totalRateio'] ?? 0),
+            'totalPrize' => (float) ($validated['totalPrize'] ?? 0),
+            'availableBalance_Next' => (float) ($validated['availableBalance_Next'] ?? 0),
+            'availableBalance_Final5' => (float) ($validated['availableBalance_Final5'] ?? 0),
+            'availableBalance_Special' => (float) ($validated['availableBalance_Special'] ?? 0),
             'participants' => [], // aqui você pode adicionar uma lógica para incluir os participantes do rateio, se necessário
         ];
 
@@ -578,9 +577,9 @@ class TesauroController extends Controller
                 $totalDebts = (float) ($profile['totalDebts'] ?? 0);
                 // $totalCredits = (float) ($profile['totalCredits'] ?? 0);
                 $availableBalance = (float) ($profile['availableBalance'] ?? 0);
-                $profile['maintenance'] = $roundMoney($maintenance);
-                $profile['totalDebts'] = $roundMoney($totalDebts + $maintenance);
-                $profile['availableBalance'] = $roundMoney($availableBalance - $maintenance);
+                $profile['maintenance'] = (float) ($maintenance);
+                $profile['totalDebts'] = (float) ($totalDebts + $maintenance);
+                $profile['availableBalance'] = (float) ($availableBalance - $maintenance);
                 $usersDataFlex->user_profile = $profile;
                 $usersDataFlex->save();
             }
@@ -635,10 +634,10 @@ class TesauroController extends Controller
         // Atualizar o totalRateio, availableBalance_Final5 e availableBalance_Special do term_data do termo criado com o valor total do rateio calculado a partir da soma das contribuições dos participantes do rateio.
         $totalRateioAux = (float) 0;
         foreach ($term->term_data['rateios'][0]['participants'] ?? [] as $participant) {
-            $totalRateioAux = $roundMoney($totalRateioAux + (float) ($participant['contribution'] ?? 0));
+            $totalRateioAux = (float) ($totalRateioAux + (float) ($participant['contribution'] ?? 0));
         }
         $termData = $term->term_data ?? [];
-        $termData['rateios'][0]['totalRateio'] = $roundMoney($totalRateioAux); // salva o total de todas as contribuições dos participantes.
+        $termData['rateios'][0]['totalRateio'] = (float) ($totalRateioAux); // salva o total de todas as contribuições dos participantes.
         $term->term_data = $termData;
         $term->save();
 
@@ -669,15 +668,16 @@ class TesauroController extends Controller
                 }
                 $availableBalance = (float) ($profile['availableBalance'] ?? 0);
                 $contribution = (float) ($participant['contribution'] ?? 0);
-                $profile['availableBalance'] = $roundMoney($availableBalance - $contribution);
-                $profile['totalDebts'] = $roundMoney((float) ($profile['totalDebts'] ?? 0) + $contribution);
+                $profile['availableBalance'] = (float) ($availableBalance - $contribution);
+                $profile['totalDebts'] = (float) ((float) ($profile['totalDebts'] ?? 0) + $contribution);
                 $usersDataFlex->user_profile = $profile;
                 $usersDataFlex->save();
             }
         } 
 
-        // Somar os valores acumulados para saber o valor total do premio desse crateio e dividir o valor do premio pelo número de ganhadores de cada faixa para saber o valor do prêmio individual de cada ganhador, e atualizar o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido, caso ele seja premiado, e atualizar os acumulados.
-        // Contar no relations quantos NTs o BT 54 (UFCSPA-5) possui. Se for maior que 1 buscar os valores acumulados de cada NT relacionado ao BT 54 e somar para ter o valor total acumulado do BT 54, e dividir o valor total acumulado do BT 54 pelo número de ganhadores de cada faixa para saber o valor do prêmio individual de cada ganhador, e atualizar o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido, caso ele seja premiado, e atualizar os acumulados. Se tiver apenas um NT relacionado ao BT 54, usar os valores acumulados no termo do RATEIO anterior.
+        // Somar os valores acumulados para saber o valor total do premio desse rateio e dividir o valor do premio pelo número de ganhadores de cada faixa para saber o valor do prêmio individual de cada ganhador, e atualizar o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido, caso ele seja premiado, e atualizar os acumulados.
+        // Contar no relations quantos NTs o BT 54 (UFCSPA-5) possui. 
+        // Se for maior que 1 buscar os valores acumulados de cada NT relacionado ao BT 54 e somar para ter o valor total acumulado do BT 54, e dividir o valor total acumulado do BT 54 pelo número de ganhadores de cada faixa para saber o valor do prêmio individual de cada ganhador, e atualizar o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido, caso ele seja premiado, e atualizar os acumulados. Se tiver apenas um NT relacionado ao BT 54, usar os valores acumulados no termo do RATEIO anterior.
         $relationsBt54 = \App\Models\Relation::where('id_term_bt', 54)
             ->orderByDesc('id')
             ->limit(2)
@@ -693,14 +693,14 @@ class TesauroController extends Controller
         } elseif ($relationsBt54->count() > 1) {
             $termRelated = \App\Models\Term::find($relationsBt54->last()->id_term_nt);
             if ($termRelated) {
-                $availableBalanceNextAnterior = $roundMoney($termRelated->term_data['rateios'][0]['availableBalance_Next'] ?? 0);
-                $availableBalanceFinal5Anterior = $roundMoney($termRelated->term_data['rateios'][0]['availableBalance_Final5'] ?? 0);
-                $availableBalanceSpecialAnterior = $roundMoney($termRelated->term_data['rateios'][0]['availableBalance_Special'] ?? 0);
+                $availableBalanceNextAnterior = $termRelated->term_data['rateios'][0]['availableBalance_Next'] ?? 0;
+                $availableBalanceFinal5Anterior = $termRelated->term_data['rateios'][0]['availableBalance_Final5'] ?? 0;
+                $availableBalanceSpecialAnterior = $termRelated->term_data['rateios'][0]['availableBalance_Special'] ?? 0;
             }
         }
         //volta para o ultimo inserido, que é o mais recente, para pegar os valores acumulados do BT 54, e somar com os valores do rateio atual para atualizar o availableBalance_Final5 e availableBalance_Special do term_data do termo criado.
         $termRelated = \App\Models\Term::find($relationsBt54->first()->id_term_nt);
-        $totalRateioAux = $roundMoney($termData['rateios'][0]['totalRateio'] ?? 0);
+        $totalRateioAux = $termData['rateios'][0]['totalRateio'] ?? 0;
         $termData = $term->term_data ?? [];
         $termData['rateios'][0]['5_hits'] = $users5hits; // ganhadores com 5
         $termData['rateios'][0]['4_hits'] = $users4hits; // ganhadores com 4
@@ -711,7 +711,8 @@ class TesauroController extends Controller
         $termData['rateios'][0]['availableBalance_Next'] = 0.0; // aqui estou atualizando o availableBalance_Next (é o valor do rateio anterior next - ainda não sei se esse rateio também vai acumular para o próximo)
         // Já coloquei o valor na variavel  $availableBalanceFinal5Anterior então pode gravar zero zerado 
         $termData['rateios'][0]['availableBalance_Final5'] = 0.0; // aqui estou atualizando o availableBalance_Final5 (é o valor do rateio anterior final 5 - ainda não sei se esse rateio também vai acumular para o próximo)
-        $termData['rateios'][0]['availableBalance_Special'] = $roundMoney($availableBalanceSpecialAnterior); // aqui estou atualizando o availableBalance_Special (é o valor do rateio anterior - ainda não sei se esse rateio também vai acumular para o próximo)
+        // Já coloquei o valor na variavel  $availableBalanceSpecialAnterior então pode gravar zero zerado 
+        $termData['rateios'][0]['availableBalance_Special'] = 0.0; // aqui estou atualizando o availableBalance_Special (é o valor do rateio anterior - ainda não sei se esse rateio também vai acumular para o próximo)
         $term->term_data = $termData;
         $term->save();
 
@@ -737,34 +738,17 @@ class TesauroController extends Controller
         $valueUser3hits = 0.0;
         $valueUser2hits = 0.0;
         $valueUser1hits = 0.0;
-
-        $availableBalanceNextAux = $roundMoney($termData['rateios'][0]['availableBalance_Next'] ?? 0); // vai ler com valor zero
-        $availableBalanceFinal5Aux = $roundMoney($termData['rateios'][0]['availableBalance_Final5'] ?? 0); // vai ler com valor zero
-        $availableBalanceSpecialAux = $roundMoney($termData['rateios'][0]['availableBalance_Special'] ?? 0);
-
-        $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
-        $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
+        $availableBalanceNextAux = (float) ($termData['rateios'][0]['availableBalance_Next'] ?? 0); // vai ler com valor zero
+        $availableBalanceFinal5Aux = (float) ($termData['rateios'][0]['availableBalance_Final5'] ?? 0); // vai ler com valor zero
+        $availableBalanceSpecialAux = (float) ($termData['rateios'][0]['availableBalance_Special'] ?? 0);
 
         if ($primeiraDataJunho->equalTo($dataConcurso)) {
-            $valorTotalPremio = $roundMoney($totalRateioAux + $availableBalanceSpecialAnterior + $availableBalanceNextAnterior);
-            // $termData = $term->term_data ?? [];
-            // $termData['rateios'][0]['totalPrize'] = $roundMoney($valorTotalPremio); // salva o total de todas as contribuições dos participantes.
-            // $term->term_data = $termData;
-            // $term->save();
-            // grava o totalPrize no Final da rotina
-
-            } elseif ($isFinal5) {
-            $valorTotalPremio = $roundMoney($totalRateioAux + $availableBalanceFinal5Anterior + $availableBalanceNextAnterior);
-            // $termData = $term->term_data ?? [];
-            // $termData['rateios'][0]['totalPrize'] = $roundMoney($valorTotalPremio); // salva o total de todas as contribuições dos participantes.
-            // $term->term_data = $termData;
-            // $term->save();
-            // grava o totalPrize no Final da rotina
-
-            $value5hits = $roundMoney($valorTotalPremio * 0.4);
-            $value4hits = $roundMoney($valorTotalPremio * 0.2);
-            $value3hits = $roundMoney($valorTotalPremio * 0.1);
-            $value2hits = $roundMoney($valorTotalPremio * 0.1);
+            //************ calculo do especial */
+            $valorTotalPremio = $totalRateioAux + $availableBalanceSpecialAnterior + $availableBalanceNextAnterior;
+            $value5hits = $valorTotalPremio * 0.70;
+            $value4hits = $valorTotalPremio * 0.15;
+            $value3hits = $valorTotalPremio * 0.10;
+            $value2hits = $valorTotalPremio * 0.05;
             $value1hits = 0.0;
 
             $hits5Count = is_array($users5hits) ? count($users5hits) : 0;
@@ -772,122 +756,248 @@ class TesauroController extends Controller
             $hits3Count = is_array($users3hits) ? count($users3hits) : 0;
             $hits2Count = is_array($users2hits) ? count($users2hits) : 0;
             $hits1Count = is_array($users1hits) ? count($users1hits) : 0;  
+
             if ($hits5Count == 0) {
-                $availableBalanceNextAux = $roundMoney($availableBalanceFinal5Aux + $availableBalanceNextAux + $value5hits);
+                // Passar todo o valor para 4 acertos caso não tenha ganhador de 5 acertos.
+                $value4hits += $value5hits;
             } else {
                 //distribuir o prêmio para cada ganhador de 5 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
-                $valueUser5hits = $roundMoney($value5hits / $hits5Count);
-                foreach ($users5hits as $userId) {  
-                    // $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                $valueUser5hits = $value5hits / $hits5Count;
+                foreach ($users5hits as $userId) {
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
                     if ($usersDataFlex) {
-                        // $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
+                        $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = (float) ($profile['availableBalance'] ?? 0);
                         $totalCredits = (float) ($profile['totalCredits'] ?? 0);
-                        $profile['availableBalance'] = $roundMoney($availableBalance + $valueUser5hits);
-                        $profile['totalCredits'] = $roundMoney($totalCredits + $valueUser5hits);
+                        $profile['availableBalance'] = (float) ($availableBalance + $valueUser5hits);
+                        $profile['totalCredits'] = (float) ($totalCredits + $valueUser5hits);
                         $usersDataFlex->user_profile = $profile;
                         $usersDataFlex->save();
                     }
                 }
             }
             if ($hits4Count == 0) {
-                $availableBalanceNextAux = $roundMoney($availableBalanceFinal5Aux + $availableBalanceNextAux + $value4hits);
+                // Passar todo o valor para 3 acertos caso não tenha ganhador de 4 acertos.
+                $value3hits += $value4hits;
             } else {
                 //distribuir o prêmio para cada ganhador de 4 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
-                $valueUser4hits = $roundMoney($value4hits / $hits4Count);
+                $valueUser4hits = $value4hits / $hits4Count;
                 foreach ($users4hits as $userId) {
-                    // $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
                     if ($usersDataFlex) {
-                        // $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
+                        $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = (float) ($profile['availableBalance'] ?? 0);
                         $totalCredits = (float) ($profile['totalCredits'] ?? 0);
-                        $profile['availableBalance'] = $roundMoney($availableBalance + $valueUser4hits);
-                        $profile['totalCredits'] = $roundMoney($totalCredits + $valueUser4hits);
+                        $profile['availableBalance'] = (float) ($availableBalance + $valueUser4hits);
+                        $profile['totalCredits'] = (float) ($totalCredits + $valueUser4hits);
                         $usersDataFlex->user_profile = $profile;
                         $usersDataFlex->save();
                     }
                 }
             }
             if ($hits3Count == 0) {
-                $availableBalanceNextAux = $roundMoney($availableBalanceFinal5Aux + $availableBalanceNextAux + $value3hits);
+                // Passar todo o valor para 2 acertos caso não tenha ganhador de 3 acertos, e passar o valor do rateio especial para o próximo rateio caso não tenha ganhador de 3 acertos, ou seja, acumular o valor do rateio especial para o próximo rateio caso não tenha ganhador de 3 acertos.
+                $value2hits += $value3hits;
             } else {
                 //distribuir o prêmio para cada ganhador de 3 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
-                 $valueUser3hits = $roundMoney($value3hits / $hits3Count);
+                 $valueUser3hits = $value3hits / $hits3Count;
                 foreach ($users3hits as $userId) {
-                    // $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
                     if ($usersDataFlex) {
-                        // $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
+                        $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = (float) ($profile['availableBalance'] ?? 0);
                         $totalCredits = (float) ($profile['totalCredits'] ?? 0);
-                        $profile['availableBalance'] = $roundMoney($availableBalance + $valueUser3hits);
-                        $profile['totalCredits'] = $roundMoney($totalCredits + $valueUser3hits);
+                        $profile['availableBalance'] = (float) ($availableBalance + $valueUser3hits);
+                        $profile['totalCredits'] = (float) ($totalCredits + $valueUser3hits);
                         $usersDataFlex->user_profile = $profile;
                         $usersDataFlex->save();
                     }
                 }
             }
             if ($hits2Count == 0) {
-                $availableBalanceNextAux = $roundMoney($availableBalanceFinal5Aux + $availableBalanceNextAux + $value2hits);
+                // Passar todo o valor para 1 acerto caso não tenha ganhador de 2 acertos.
+                $value1hits += $value2hits;
             } else {
                 //distribuir o prêmio para cada ganhador de 2 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
-                $valueUser2hits = $roundMoney($value2hits / $hits2Count);
+                $valueUser2hits = $value2hits / $hits2Count;
                 foreach ($users2hits as $userId) {
-                    // $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
                     if ($usersDataFlex) {
-                        // $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
+                        $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = (float) ($profile['availableBalance'] ?? 0);
                         $totalCredits = (float) ($profile['totalCredits'] ?? 0);
-                        $profile['availableBalance'] = $roundMoney($availableBalance + $valueUser2hits);
-                        $profile['totalCredits'] = $roundMoney($totalCredits + $valueUser2hits);
+                        $profile['availableBalance'] = (float) ($availableBalance + $valueUser2hits);
+                        $profile['totalCredits'] = (float) ($totalCredits + $valueUser2hits);
                         $usersDataFlex->user_profile = $profile;
                         $usersDataFlex->save();
                     }
                 }
             }
             if ($hits1Count == 0) {
-                $availableBalanceNextAux = $roundMoney($availableBalanceFinal5Aux + $availableBalanceNextAux + $value1hits);
+                // NENHUM ACERTADOR Passar o valor do rateio especial para o acumulado do próximo rateio.
+                $availableBalanceNextAux = $availableBalanceSpecialAux + $availableBalanceNextAux + $value1hits;
             } else {
-                //distribuir o prêmio para cada ganhador de 1 acerto, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
-                $valueUser1hits = $roundMoney($value1hits / $hits1Count);
+                //distribuir o prêmio para cada ganhador de 1 acerto, atualizando o availableBalance e totalcredits de cada participante do rateio com o valor do prêmio recebido.
+                $valueUser1hits = $value1hits / $hits1Count;
                 foreach ($users1hits as $userId) {
-                    // $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
                     if ($usersDataFlex) {
-                        // $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
+                        $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = (float) ($profile['availableBalance'] ?? 0);
                         $totalCredits = (float) ($profile['totalCredits'] ?? 0);
-                        $profile['availableBalance'] = $roundMoney($availableBalance + $valueUser1hits);
-                        $profile['totalCredits'] = $roundMoney($totalCredits + $valueUser1hits);
+                        $profile['availableBalance'] = (float) ($availableBalance + $valueUser1hits);
+                        $profile['totalCredits'] = (float) ($totalCredits + $valueUser1hits);
                         $usersDataFlex->user_profile = $profile;
                         $usersDataFlex->save();
                     }
                 }
             }
-            $availableBalanceFinal5Aux = $roundMoney($availableBalanceFinal5Aux + ($valorTotalPremio * 0.1)); // aqui estou atualizando o availableBalance_Final5
-            $availableBalanceSpecialAux = $roundMoney($availableBalanceSpecialAux + ($valorTotalPremio * 0.1)); // aqui estou atualizando o availableBalance_Special
+            //No SPECIAL não acumula nada no próximo final5 e no special
+            //Ou seja, o final 5 fica com o que tem e o special fica zerado
+            // Se NENHUM ACERTADOR a variável $availableBalanceNextAux já acumulou tudo e grava em availableBalance_Next
+            $availableBalanceFinal5Aux = $availableBalanceFinal5Aux + $availableBalanceFinal5Anterior; // aqui estou atualizando o availableBalance_Final5 para ficar com o que tinha
+            $availableBalanceSpecialAux = 0.0; // aqui estou zerando o availableBalance_Special (pois todo o acumulado foi distribuido)
             $termData = $term->term_data ?? [];
-            $termData['rateios'][0]['value_5_hits'] = $roundMoney($value5hits); // ganhadores com 5
-            $termData['rateios'][0]['value_4_hits'] = $roundMoney($value4hits); // ganhadores com 4
-            $termData['rateios'][0]['value_3_hits'] = $roundMoney($value3hits); // ganhadores com 3
-            $termData['rateios'][0]['value_2_hits'] = $roundMoney($value2hits); // ganhadores com 2
-            $termData['rateios'][0]['value_1_hits'] = $roundMoney($value1hits); // ganhadores com 1
-            $termData['rateios'][0]['totalPrize'] = $roundMoney($valorTotalPremio); // salva o total de todas as contribuições dos participantes.
-            $termData['rateios'][0]['availableBalance_Next'] = $roundMoney($availableBalanceNextAux); // aqui estou atualizando na base o availableBalance_Next
-            $termData['rateios'][0]['availableBalance_Final5'] = $roundMoney($availableBalanceFinal5Aux); // aqui estou atualizando na base o availableBalance_Final5
-            $termData['rateios'][0]['availableBalance_Special'] = $roundMoney($availableBalanceSpecialAux); // aqui estou atualizando na base o availableBalance_Special
+            $termData['rateios'][0]['value_5_hits'] = (float) ($value5hits); // ganhadores com 5
+            $termData['rateios'][0]['value_4_hits'] = (float) ($value4hits); // ganhadores com 4
+            $termData['rateios'][0]['value_3_hits'] = (float) ($value3hits); // ganhadores com 3
+            $termData['rateios'][0]['value_2_hits'] = (float) ($value2hits); // ganhadores com 2
+            $termData['rateios'][0]['value_1_hits'] = (float) ($value1hits); // ganhadores com 1
+            $termData['rateios'][0]['totalPrize'] = (float) ($valorTotalPremio); // salva o total de todas as contribuições dos participantes.
+            $termData['rateios'][0]['availableBalance_Next'] = (float) ($availableBalanceNextAux); // aqui estou atualizando na base o availableBalance_Next
+            $termData['rateios'][0]['availableBalance_Final5'] = (float) ($availableBalanceFinal5Aux); // aqui estou atualizando na base o availableBalance_Final5
+            $termData['rateios'][0]['availableBalance_Special'] = (float) ($availableBalanceSpecialAux); // aqui estou atualizando na base o availableBalance_Special
+            $term->term_data = $termData;
+            $term->save();
+
+            } elseif ($isFinal5) {
+            $valorTotalPremio = $totalRateioAux + $availableBalanceFinal5Anterior + $availableBalanceNextAnterior;
+            $value5hits = $valorTotalPremio * 0.7;
+            $value4hits = $valorTotalPremio * 0.15;
+            $value3hits = $valorTotalPremio * 0.1;
+            $value2hits = $valorTotalPremio * 0.05;
+            $value1hits = 0.0;
+
+            $hits5Count = is_array($users5hits) ? count($users5hits) : 0;
+            $hits4Count = is_array($users4hits) ? count($users4hits) : 0;
+            $hits3Count = is_array($users3hits) ? count($users3hits) : 0;
+            $hits2Count = is_array($users2hits) ? count($users2hits) : 0;
+            $hits1Count = is_array($users1hits) ? count($users1hits) : 0;  
+
+            if ($hits5Count == 0) {
+                $availableBalanceNextAux = $availableBalanceNextAux + $value5hits;
+            } else {
+                //distribuir o prêmio para cada ganhador de 5 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
+                $valueUser5hits = $value5hits / $hits5Count;
+                foreach ($users5hits as $userId) {  
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    if ($usersDataFlex) {
+                        $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
+                        $availableBalance = (float) ($profile['availableBalance'] ?? 0);
+                        $totalCredits = (float) ($profile['totalCredits'] ?? 0);
+                        $profile['availableBalance'] = (float) ($availableBalance + $valueUser5hits);
+                        $profile['totalCredits'] = (float) ($totalCredits + $valueUser5hits);
+                        $usersDataFlex->user_profile = $profile;
+                        $usersDataFlex->save();
+                    }
+                }
+            }
+            if ($hits4Count == 0) {
+                $availableBalanceNextAux =  $availableBalanceNextAux + $value4hits;
+            } else {
+                //distribuir o prêmio para cada ganhador de 4 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
+                $valueUser4hits = $value4hits / $hits4Count;
+                foreach ($users4hits as $userId) {
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    if ($usersDataFlex) {
+                        $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
+                        $availableBalance = (float) ($profile['availableBalance'] ?? 0);
+                        $totalCredits = (float) ($profile['totalCredits'] ?? 0);
+                        $profile['availableBalance'] = (float) ($availableBalance + $valueUser4hits);
+                        $profile['totalCredits'] = (float) ($totalCredits + $valueUser4hits);
+                        $usersDataFlex->user_profile = $profile;
+                        $usersDataFlex->save();
+                    }
+                }
+            }
+            if ($hits3Count == 0) {
+                $availableBalanceNextAux = $availableBalanceNextAux + $value3hits;
+            } else {
+                //distribuir o prêmio para cada ganhador de 3 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
+                 $valueUser3hits = $value3hits / $hits3Count;
+                foreach ($users3hits as $userId) {
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    if ($usersDataFlex) {
+                        $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
+                        $availableBalance = (float) ($profile['availableBalance'] ?? 0);
+                        $totalCredits = (float) ($profile['totalCredits'] ?? 0);
+                        $profile['availableBalance'] = (float) ($availableBalance + $valueUser3hits);
+                        $profile['totalCredits'] = (float) ($totalCredits + $valueUser3hits);
+                        $usersDataFlex->user_profile = $profile;
+                        $usersDataFlex->save();
+                    }
+                }
+            }
+            if ($hits2Count == 0) {
+                $availableBalanceNextAux = $availableBalanceNextAux + $value2hits;
+            } else {
+                //distribuir o prêmio para cada ganhador de 2 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
+                $valueUser2hits = $value2hits / $hits2Count;
+                foreach ($users2hits as $userId) {
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    if ($usersDataFlex) {
+                        $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
+                        $availableBalance = (float) ($profile['availableBalance'] ?? 0);
+                        $totalCredits = (float) ($profile['totalCredits'] ?? 0);
+                        $profile['availableBalance'] = (float) ($availableBalance + $valueUser2hits);
+                        $profile['totalCredits'] = (float) ($totalCredits + $valueUser2hits);
+                        $usersDataFlex->user_profile = $profile;
+                        $usersDataFlex->save();
+                    }
+                }
+            }
+            if ($hits1Count == 0) {
+                $availableBalanceNextAux = $availableBalanceNextAux + $value1hits;
+            } else {
+                //distribuir o prêmio para cada ganhador de 1 acerto, atualizando o availableBalance e totalcredits de cada participante do rateio com o valor do prêmio recebido.
+                $valueUser1hits = $value1hits / $hits1Count;
+                foreach ($users1hits as $userId) {
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    if ($usersDataFlex) {
+                        $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
+                        $availableBalance = (float) ($profile['availableBalance'] ?? 0);
+                        $totalCredits = (float) ($profile['totalCredits'] ?? 0);
+                        $profile['availableBalance'] = (float) ($availableBalance + $valueUser1hits);
+                        $profile['totalCredits'] = (float) ($totalCredits + $valueUser1hits);
+                        $usersDataFlex->user_profile = $profile;
+                        $usersDataFlex->save();
+                    }
+                }
+            }
+            //No FINAL5 não acumula nada no próximo final5
+            //Ou seja, o final 5 fica ZERADO e o SPECIAL fica com o que tem
+            // Se NENHUM ACERTADOR a variável $availableBalanceNextAux já acumulou tudo e grava em availableBalance_Next
+
+            $availableBalanceFinal5Aux = 0.0; // aqui estou zerando o availableBalance_Final5 para o próximo rateio
+            $availableBalanceSpecialAux = $availableBalanceSpecialAux + $availableBalanceSpecialAnterior; // aqui estou mantendo o valor availableBalance_Special
+            $termData = $term->term_data ?? [];
+            $termData['rateios'][0]['value_5_hits'] = (float) ($value5hits); // ganhadores com 5
+            $termData['rateios'][0]['value_4_hits'] = (float) ($value4hits); // ganhadores com 4
+            $termData['rateios'][0]['value_3_hits'] = (float) ($value3hits); // ganhadores com 3
+            $termData['rateios'][0]['value_2_hits'] = (float) ($value2hits); // ganhadores com 2
+            $termData['rateios'][0]['value_1_hits'] = (float) ($value1hits); // ganhadores com 1
+            $termData['rateios'][0]['totalPrize'] = (float) ($valorTotalPremio); // salva o total de todas as contribuições dos participantes.
+            $termData['rateios'][0]['availableBalance_Next'] = (float) ($availableBalanceNextAux); // aqui estou atualizando na base o availableBalance_Next
+            $termData['rateios'][0]['availableBalance_Final5'] = (float) ($availableBalanceFinal5Aux); // aqui estou atualizando na base o availableBalance_Final5
+            $termData['rateios'][0]['availableBalance_Special'] = (float) ($availableBalanceSpecialAux); // aqui estou atualizando na base o availableBalance_Special
             $term->term_data = $termData;
             $term->save();
         } else {
-            $valorTotalPremio = $roundMoney($totalRateioAux + $availableBalanceNextAnterior);
-            // $termData = $term->term_data ?? [];
-            // $termData['rateios'][0]['totalPrize'] = $roundMoney($valorTotalPremio); // salva o total de todas as contribuições dos participantes.
-            // $term->term_data = $termData;
-            // $term->save();
-            // grava o totalPrize no Final da rotina
-
-            $value5hits = $roundMoney($valorTotalPremio * 0.4);
-            $value4hits = $roundMoney($valorTotalPremio * 0.2);
-            $value3hits = $roundMoney($valorTotalPremio * 0.1);
-            $value2hits = $roundMoney($valorTotalPremio * 0.1);
+            $valorTotalPremio = $totalRateioAux + $availableBalanceNextAnterior;
+            $value5hits = $valorTotalPremio * 0.5;
+            $value4hits = $valorTotalPremio * 0.15;
+            $value3hits = $valorTotalPremio * 0.1;
+            $value2hits = $valorTotalPremio * 0.05;
             $value1hits = 0.0;
 
             $hits5Count = is_array($users5hits) ? count($users5hits) : 0;
@@ -896,107 +1006,107 @@ class TesauroController extends Controller
             $hits2Count = is_array($users2hits) ? count($users2hits) : 0;
             $hits1Count = is_array($users1hits) ? count($users1hits) : 0;  
             if ($hits5Count == 0) {
-                $availableBalanceNextAux = $roundMoney($availableBalanceNextAux + $value5hits);
+                $availableBalanceNextAux = $availableBalanceNextAux + $value5hits;
             } else {
                 //distribuir o prêmio para cada ganhador de 5 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
-                $valueUser5hits = $roundMoney($value5hits / $hits5Count);
+                $valueUser5hits = $value5hits / $hits5Count;
                 foreach ($users5hits as $userId) {  
-                    // $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
                     if ($usersDataFlex) {
-                        // $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
+                        $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = (float) ($profile['availableBalance'] ?? 0);
                         $totalCredits = (float) ($profile['totalCredits'] ?? 0);
-                        $profile['availableBalance'] = $roundMoney($availableBalance + $valueUser5hits);
-                        $profile['totalCredits'] = $roundMoney($totalCredits + $valueUser5hits);
+                        $profile['availableBalance'] = (float) ($availableBalance + $valueUser5hits);
+                        $profile['totalCredits'] = (float) ($totalCredits + $valueUser5hits);
                         $usersDataFlex->user_profile = $profile;
                         $usersDataFlex->save();
                     }
                 }
             }
             if ($hits4Count == 0) {
-                $availableBalanceNextAux = $roundMoney($availableBalanceNextAux + $value4hits);
+                $availableBalanceNextAux = $availableBalanceNextAux + $value4hits;
             } else {
                 //distribuir o prêmio para cada ganhador de 4 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
-                $valueUser4hits = $roundMoney($value4hits / $hits4Count);
+                $valueUser4hits = $value4hits / $hits4Count;
                 foreach ($users4hits as $userId) {
-                    // $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
                     if ($usersDataFlex) {
-                        // $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
+                        $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = (float) ($profile['availableBalance'] ?? 0);
                         $totalCredits = (float) ($profile['totalCredits'] ?? 0);
-                        $profile['availableBalance'] = $roundMoney($availableBalance + $valueUser4hits);
-                        $profile['totalCredits'] = $roundMoney($totalCredits + $valueUser4hits);
+                        $profile['availableBalance'] = (float) ($availableBalance + $valueUser4hits);
+                        $profile['totalCredits'] = (float) ($totalCredits + $valueUser4hits);
                         $usersDataFlex->user_profile = $profile;
                         $usersDataFlex->save();
                     }
                 }
             }
             if ($hits3Count == 0) {
-                $availableBalanceNextAux = $roundMoney($availableBalanceNextAux + $value3hits);
+                $availableBalanceNextAux = $availableBalanceNextAux + $value3hits;
             } else {
                 //distribuir o prêmio para cada ganhador de 3 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
-                 $valueUser3hits = $roundMoney($value3hits / $hits3Count);
+                 $valueUser3hits = $value3hits / $hits3Count;
                 foreach ($users3hits as $userId) {
-                    // $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
                     if ($usersDataFlex) {
-                        // $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
+                        $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = (float) ($profile['availableBalance'] ?? 0);
                         $totalCredits = (float) ($profile['totalCredits'] ?? 0);
-                        $profile['availableBalance'] = $roundMoney($availableBalance + $valueUser3hits);
-                        $profile['totalCredits'] = $roundMoney($totalCredits + $valueUser3hits);
+                        $profile['availableBalance'] = (float) ($availableBalance + $valueUser3hits);
+                        $profile['totalCredits'] = (float) ($totalCredits + $valueUser3hits);
                         $usersDataFlex->user_profile = $profile;
                         $usersDataFlex->save();
                     }
                 }
             }
             if ($hits2Count == 0) {
-                $availableBalanceNextAux = $roundMoney($availableBalanceNextAux + $value2hits);
+                $availableBalanceNextAux = $availableBalanceNextAux + $value2hits;
             } else {
                 //distribuir o prêmio para cada ganhador de 2 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
-                $valueUser2hits = $roundMoney($value2hits / $hits2Count);
+                $valueUser2hits = $value2hits / $hits2Count;
                 foreach ($users2hits as $userId) {
-                    // $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
                     if ($usersDataFlex) {
-                        // $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
+                        $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = (float) ($profile['availableBalance'] ?? 0);
-                        $totalCredits = (float) ($profile['totalCredits'] ?? 0);
-                        $profile['availableBalance'] = $roundMoney($availableBalance + $valueUser2hits);
-                        $profile['totalCredits'] = $roundMoney($totalCredits + $valueUser2hits);
-                        $usersDataFlex->user_profile = $profile;
-                        $usersDataFlex->save();
-                    }
+                            $totalCredits = (float) ($profile['totalCredits'] ?? 0);
+                            $profile['availableBalance'] = (float) ($availableBalance + $valueUser2hits);
+                            $profile['totalCredits'] = (float) ($totalCredits + $valueUser2hits);
+                            $usersDataFlex->user_profile = $profile;
+                            $usersDataFlex->save();
+                        }
                 }
             }
             if ($hits1Count == 0) {
-                $availableBalanceNextAux = $roundMoney($availableBalanceNextAux + $value1hits);
+                $availableBalanceNextAux = $availableBalanceNextAux + $value1hits;
             } else {
                 //distribuir o prêmio para cada ganhador de 1 acerto, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
-                $valueUser1hits = $roundMoney($value1hits / $hits1Count);
+                $valueUser1hits = $value1hits / $hits1Count;
                 foreach ($users1hits as $userId) {
-                    // $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
                     if ($usersDataFlex) {
-                        // $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
+                        $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = (float) ($profile['availableBalance'] ?? 0);
                         $totalCredits = (float) ($profile['totalCredits'] ?? 0);
-                        $profile['availableBalance'] = $roundMoney($availableBalance + $valueUser1hits);
-                        $profile['totalCredits'] = $roundMoney($totalCredits + $valueUser1hits);
+                        $profile['availableBalance'] = (float) ($availableBalance + $valueUser1hits);
+                        $profile['totalCredits'] = (float) ($totalCredits + $valueUser1hits);
                         $usersDataFlex->user_profile = $profile;
                         $usersDataFlex->save();
                     }
                 }
             }
-            $availableBalanceFinal5Aux = $roundMoney($availableBalanceFinal5Aux + ($valorTotalPremio * 0.1)); // aqui estou atualizando o availableBalance_Final5
-            $availableBalanceSpecialAux = $roundMoney($availableBalanceSpecialAux + ($valorTotalPremio * 0.1)); // aqui estou atualizando o availableBalance_Special
+            $availableBalanceFinal5Aux = $availableBalanceFinal5Aux + $availableBalanceFinal5Anterior + ($valorTotalPremio * 0.1); // aqui estou atualizando o availableBalance_Final5
+            $availableBalanceSpecialAux = $availableBalanceSpecialAux + $availableBalanceSpecialAnterior + ($valorTotalPremio * 0.1); // aqui estou atualizando o availableBalance_Special
             $termData = $term->term_data ?? [];
-            $termData['rateios'][0]['value_5_hits'] = $roundMoney($value5hits); // ganhadores com 5
-            $termData['rateios'][0]['value_4_hits'] = $roundMoney($value4hits); // ganhadores com 4
-            $termData['rateios'][0]['value_3_hits'] = $roundMoney($value3hits); // ganhadores com 3
-            $termData['rateios'][0]['value_2_hits'] = $roundMoney($value2hits); // ganhadores com 2
-            $termData['rateios'][0]['value_1_hits'] = $roundMoney($value1hits); // ganhadores com 1
-            $termData['rateios'][0]['totalPrize'] = $roundMoney($valorTotalPremio); // salva o total de todas as contribuições dos participantes.
-            $termData['rateios'][0]['availableBalance_Next'] = $roundMoney($availableBalanceNextAux); // aqui estou atualizando na base o availableBalance_Next
-            $termData['rateios'][0]['availableBalance_Final5'] = $roundMoney($availableBalanceFinal5Aux); // aqui estou atualizando na base o availableBalance_Final5
-            $termData['rateios'][0]['availableBalance_Special'] = $roundMoney($availableBalanceSpecialAux); // aqui estou atualizando na base o availableBalance_Special
+            $termData['rateios'][0]['value_5_hits'] = (float) ($value5hits); // ganhadores com 5
+            $termData['rateios'][0]['value_4_hits'] = (float) ($value4hits); // ganhadores com 4
+            $termData['rateios'][0]['value_3_hits'] = (float) ($value3hits); // ganhadores com 3
+            $termData['rateios'][0]['value_2_hits'] = (float) ($value2hits); // ganhadores com 2
+            $termData['rateios'][0]['value_1_hits'] = (float) ($value1hits); // ganhadores com 1
+            $termData['rateios'][0]['totalPrize'] = (float) ($valorTotalPremio); // salva o total de todas as contribuições dos participantes.
+            $termData['rateios'][0]['availableBalance_Next'] = (float) ($availableBalanceNextAux); // aqui estou atualizando na base o availableBalance_Next
+            $termData['rateios'][0]['availableBalance_Final5'] = (float) ($availableBalanceFinal5Aux); // aqui estou atualizando na base o availableBalance_Final5
+            $termData['rateios'][0]['availableBalance_Special'] = (float) ($availableBalanceSpecialAux); // aqui estou atualizando na base o availableBalance_Special
             $term->term_data = $termData;
             $term->save();
         }

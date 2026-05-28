@@ -151,40 +151,6 @@
                     </div>
                 </div>
             </div>
-            {{-- <div class="row mb-2">
-                <label  class="col-sm-2 col-form-label" for="totalRateio"><strong>Valor do Rateio:</strong></label>
-                <div class="col-sm-8">
-                    <input type="number" class="form-control readonly-field bg-info text-white" id="totalRateio" name="totalRateio" value="{{ old('totalRateio', $totalRateio) }}" readonly>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <label  class="col-sm-2 col-form-label" for="availableBalance_Next"><strong>Valor acumulado próximo:</strong></label>
-                <div class="col-sm-8">
-                    <input type="number" class="form-control readonly-field bg-info text-white" id="availableBalance_Next" name="availableBalance_Next" value="{{ old('availableBalance_Next', $availableBalance_Next) }}" readonly>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <label  class="col-sm-2 col-form-label" for="availableBalance_Final5"><strong>Valor acumulado final 5:</strong></label>
-                <div class="col-sm-8">
-                    <input type="number" class="form-control readonly-field bg-info text-white" id="availableBalance_Final5" name="availableBalance_Final5" value="{{ old('availableBalance_Final5', $availableBalance_Final5) }}" readonly>
-                </div>
-            </div>
-
-            <div class="row mb-2">
-                <label  class="col-sm-2 col-form-label" for="availableBalance_Special"><strong>Valor acumulado especial: {{ $primeiraDataJunho->format('d/m/Y') }}</strong></label>
-                <div class="col-sm-8">
-                    <input type="number" class="form-control readonly-field bg-info text-white" id="availableBalance_Special" name="availableBalance_Special" value="{{ old('availableBalance_Special', $availableBalance_Special) }}" readonly>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <label  class="col-sm-2 col-form-label" for="participants"><strong>Participantes:</strong></label>
-                <div class="col-sm-8">
-                    <input type="number" class="form-control readonly-field bg-info text-white" id="participants" name="participants" value="{{ old('participants', $participants) }}" readonly>
-                </div>                
-            </div>
-            <div class="py-2 mb-4 rounded">
-                <hr style="margin:8px 0; opacity:.3;">
-            </div> --}}
             <div class="row mb-3">
                 <button type="submit" class="btn btn-primary">Atualizar</button>
             </div>
