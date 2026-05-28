@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             HabitatSeeder::class,
             NicheSeeder::class,
+            TermSeeder::class,
+            RelationSeeder::class,
             UsersDataFlexSeeder::class,
         ]);
     }
