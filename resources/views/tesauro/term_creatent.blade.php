@@ -28,8 +28,9 @@
         </div>        
         <div class="row mb-2">
             <label for="term" class="col-sm-2 col-form-label"><strong>Termo Específico:</strong></label>
-            <div class="col">
-                <input type="text" list="termList" id="id_term_nt_text" placeholder="Digite para buscar termo" autofocus>
+            <div class="col termList border rounded-3 bg-light p-3 shadow-sm">
+                <input type="text" class="form-control" list="termList" id="id_term_nt_text" placeholder="Digite para buscar termo" autofocus>
+                <div class="form-text">Selecione um termo existente na lista para vincular como NT.</div>
                 <input type="hidden" name="id_term_nt" id="id_term_nt">
             </div>
         </div>

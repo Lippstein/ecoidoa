@@ -35,13 +35,13 @@ class TesauroController extends Controller
             ->paginate(1000);
         }
         // dd($tesauro);
-    // Listar todos os campos da tabela relations
-    $relations = \App\Models\Relation::where('id_niche', $niche_filter)
-        ->orderBy('term_order')
-        ->get()
-        ->toArray();
-    
-    return view('tesauro.tesauro_list', compact('tesauro', 'niches', 'niche_filter', 'bt_filter', 'relations', 'id_term_bt', 'term_order'));
+        // Listar todos os campos da tabela relations
+        $relations = \App\Models\Relation::where('id_niche', $niche_filter)
+            ->orderBy('term_order')
+            ->get()
+            ->toArray();
+        
+        return view('tesauro.tesauro_list', compact('tesauro', 'niches', 'niche_filter', 'bt_filter', 'relations', 'id_term_bt', 'term_order'));
     }
 
      /**
@@ -676,30 +676,30 @@ class TesauroController extends Controller
         } 
 
         // Somar os valores acumulados para saber o valor total do premio desse rateio e dividir o valor do premio pelo número de ganhadores de cada faixa para saber o valor do prêmio individual de cada ganhador, e atualizar o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido, caso ele seja premiado, e atualizar os acumulados.
-        // Contar no relations quantos NTs o BT 54 (UFCSPA-5) possui. 
-        // Se for maior que 1 buscar os valores acumulados de cada NT relacionado ao BT 54 e somar para ter o valor total acumulado do BT 54, e dividir o valor total acumulado do BT 54 pelo número de ganhadores de cada faixa para saber o valor do prêmio individual de cada ganhador, e atualizar o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido, caso ele seja premiado, e atualizar os acumulados. Se tiver apenas um NT relacionado ao BT 54, usar os valores acumulados no termo do RATEIO anterior.
-        $relationsBt54 = \App\Models\Relation::where('id_term_bt', 54)
-            ->orderByDesc('id')
-            ->limit(2)
-            ->get();
+        // Contar no relations quantos NTs, o BT 45 (UFCSPA-5) possui. 
+        // Se for maior que 1 buscar os valores acumulados de cada NT relacionado ao BT 45 e somar para ter o valor total acumulado do BT 45, e dividir o valor total acumulado do BT 45 pelo número de ganhadores de cada faixa para saber o valor do prêmio individual de cada ganhador, e atualizar o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido, caso ele seja premiado, e atualizar os acumulados. Se tiver apenas um NT relacionado ao BT 45, usar os valores acumulados no termo do RATEIO anterior.
+
+        $relationsBt45 = \App\Models\Relation::where('id_term_bt', $id_term_bt)->orderByDesc('id')->limit(2)->get();
+        $availableBalanceNextAnteriorBt45 = (float) 0.0;
         $availableBalanceNextAnterior = (float) 0.0;
         $availableBalanceFinal5Anterior = (float) 0.0;
         $availableBalanceSpecialAnterior = (float) 0.0;
-        if ($relationsBt54->count() == 1) {
-            //Não tem Rateio Anterior, então os valores acumulados do BT 54 são 0.
-            $availableBalanceNextAnterior = (float) 0.0;
+        if ($relationsBt45->count() == 1) {
+            //Não tem Rateio Anterior, então os valores acumulados do BT 45 são 0.
+            $availableBalanceNextAnteriorBt45 = (float) 0.0;
             $availableBalanceFinal5Anterior = (float) 0.0;
             $availableBalanceSpecialAnterior = (float) 0.0;
-        } elseif ($relationsBt54->count() > 1) {
-            $termRelated = \App\Models\Term::find($relationsBt54->last()->id_term_nt);
+        } elseif ($relationsBt45->count() > 1) {
+            $termRelated = \App\Models\Term::find($relationsBt45->last()->id_term_nt);
             if ($termRelated) {
                 $availableBalanceNextAnterior = $termRelated->term_data['rateios'][0]['availableBalance_Next'] ?? 0;
                 $availableBalanceFinal5Anterior = $termRelated->term_data['rateios'][0]['availableBalance_Final5'] ?? 0;
                 $availableBalanceSpecialAnterior = $termRelated->term_data['rateios'][0]['availableBalance_Special'] ?? 0;
             }
         }
-        //volta para o ultimo inserido, que é o mais recente, para pegar os valores acumulados do BT 54, e somar com os valores do rateio atual para atualizar o availableBalance_Final5 e availableBalance_Special do term_data do termo criado.
-        $termRelated = \App\Models\Term::find($relationsBt54->first()->id_term_nt);
+        //volta para o ultimo inserido, que é o mais recente, para pegar os valores acumulados do BT 45, e somar com os valores do rateio atual para atualizar o availableBalance_Final5 e availableBalance_Special do term_data do termo criado.
+        $firstRelationBt45 = $relationsBt45->first();
+        $termRelated = $firstRelationBt45 ? \App\Models\Term::find($firstRelationBt45->id_term_nt) : null;
         $totalRateioAux = $termData['rateios'][0]['totalRateio'] ?? 0;
         $termData = $term->term_data ?? [];
         $termData['rateios'][0]['5_hits'] = $users5hits; // ganhadores com 5

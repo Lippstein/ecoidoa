@@ -16,16 +16,84 @@
 
         @if($tesauro->isEmpty())
             @php
-                $redirectUrl = route('term_create.show', [
-                    'niche_filter' => $niche_filter ?? '0',
-                    'bt_filter' => $bt_filter ?? '0',
-                    'id_term_bt' => $bt_filter ?? '0',
-                ]);
+                $tabNiches = \App\Models\Niche::where('id', $niche_filter)->first(); 
+                $tabHabitats = \App\Models\Habitat::where('id', $tabNiches->habitat_id)->first();
+
+                $tabRelations = \App\Models\Relation::where('id_niche', $niche_filter)->get();
+
+                $nameDoBT = $tabHabitats->habitat;
+                $tabTerms = \App\Models\Term::where('term', $nameDoBT)
+                    ->where('id_niche', $niche_filter)
+                    ->get();
+                if($tabTerms->isEmpty()) {
+                    \App\Models\Term::firstOrCreate(
+                        ['term' => $nameDoBT, 'id_niche' => $niche_filter],
+                        ['definition' => 'Termo Genérico (raiz ou inicial) deste nicho', 'language' => 'pt_BR']
+                    );
+                    // atualizar as variáveis para refletir os termos recém-criados
+                    $tabTerms = \App\Models\Term::where('id_niche', $niche_filter)->get();
+                }
+                $idTermBT = null;
+                foreach ($tabTerms as $i) {
+                    if (isset($i->id) && strcasecmp($i->term, $nameDoBT) === 0) {
+                        $idTermBT = $i->id;
+                        break;
+                    }
+                }
+
+                $nameDoNT = $tabNiches->niche;
+                $tabTerms = \App\Models\Term::where('term', $nameDoNT)
+                    ->where('id_niche', $niche_filter)
+                    ->get();
+                if($tabTerms->isEmpty()) {
+                    \App\Models\Term::firstOrCreate(
+                    ['term' => $nameDoNT, 'id_niche' => $niche_filter],
+                    ['definition' => 'Primeiro termo específico deste nicho', 'language' => 'pt_BR']
+                    );
+                    // atualizar as variáveis para refletir os termos recém-criados
+                    $tabTerms = \App\Models\Term::where('id_niche', $niche_filter)->get();
+                }
+                $idTermNT = null;
+                foreach ($tabTerms as $i) {
+                    if (isset($i->id) && strcasecmp($i->term, $nameDoNT) === 0) {
+                        $idTermNT = $i->id;
+                        break;
+                    }
+                }
+                $bt_filter = $idTermBT;
+                $id_term_bt = $idTermBT;
+                $id_term_nt = $idTermNT;
+                
+                // dd($idTermBT, $idTermNT);
+
+                if($tabRelations->isEmpty()) {
+                    \App\Models\Relation::firstOrCreate(
+                        [
+                            'id_niche' => $niche_filter,
+                            'id_term_bt' => $idTermBT,
+                            'id_term_nt' => $idTermNT,
+                            'id_user' => auth()->id(),
+                        ],
+                        ['term_order' => 1]
+                    );
+                    echo "<script>window.location.href='" . route('tesauro_list.show', ['niche_filter' => $niche_filter, 'bt_filter' => $tabNiches->id]) . "';</script>";
+                    exit;
+                }
+
+
+
+                //                             // dd($idTermBT, $idTermNT);
+                // $redirectUrl = route('term_create.show', [
+                //     'niche_filter' => $niche_filter ?? '0',
+                //     'bt_filter' => $bt_filter ?? '0',
+                //     'id_term_bt' => $id_term_bt ?? '0',
+                //     'id_term_nt' => $id_term_nt ?? '0',
+                // ]);
             @endphp
-            <script>
+            {{-- <script> --}}
                 // garante escape seguro para JS
-                window.location.href = @json($redirectUrl);
-            </script>
+                // window.location.href = @json($redirectUrl);
+            {{-- </script> --}}
         @else
             <div class="flex items-end w-rounded">
                 <form method="GET" action="{{ route('tesauro_list.show') }}" class="row row-cols-lg-auto mb-2 g-2 align-items-center">

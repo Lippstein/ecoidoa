@@ -6,37 +6,6 @@
         $tabNiches = \App\Models\Niche::where('id', $niche_filter)->first(); 
         $tabHabitats = \App\Models\Habitat::where('id', $tabNiches->habitat_id)->first();
         $tabTerms = \App\Models\Term::where('id_niche', $niche_filter)->get();
-        $tabRelations = \App\Models\Relation::where('id_niche', $niche_filter)->get();
-        // Se NÃO tem nenhum termo cadastrado do nicho na tabela terms 
-        // Então deve-se cadastrar o term (habitat) primeiro, depois o term (niche) na tabela terms 
-        // E, na tabela relations criar a relação do termo genérico BT (habitat) com o termo específico NT (niche)
-        // dd($tabTerms);
-        if($tabTerms->isEmpty()) {
-            $termBTname = $tabHabitats->habitat;
-            $termNTname = $tabNiches->niche;
-            \App\Models\Term::firstOrCreate(
-                ['term' => $termBTname, 'id_niche' => $niche_filter],
-                ['definition' => 'Termo Genérico (raiz ou inicial) deste nicho', 'language' => 'pt_BR']
-            );
-            \App\Models\Term::firstOrCreate(
-                ['term' => $termNTname, 'id_niche' => $niche_filter],
-                ['definition' => 'Primeiro termo específico deste nicho', 'language' => 'pt_BR']
-            );
-            $tabTerms = \App\Models\Term::where('id_niche', $niche_filter)->get();
-            $termBT = \App\Models\Term::where('term', $termBTname)->where('id_niche', $niche_filter)->first();
-            $termNT = \App\Models\Term::where('term', $termNTname)->where('id_niche', $niche_filter)->first();
-            \App\Models\Relation::firstOrCreate(
-                [
-                    'id_niche' => $niche_filter,
-                    'id_term_bt' => $termBT->id,
-                    'id_term_nt' => $termNT->id,
-                    'id_user' => auth()->id(),
-                ],
-                ['term_order' => 1]
-            );
-            $tabRelations = \App\Models\Relation::where('id_niche', $niche_filter)->get();
-        }
-
     @endphp
     <div class="py-2 mb-4 rounded">
         <h4 class="text-center">Cadastrar Novo Termo no Nicho: {{ $tabNiches->niche }} </h4>
@@ -44,7 +13,6 @@
     <div class="d-flex justify-content-end gap-2 mb-3">
         <a href="{{ route('tesauro_list.show', ['niche_filter' => $niche_filter, 'bt_filter' => $bt_filter]) }}" class="btn btn-info">Voltar para o Tesauro</a>
     </div>
-
     @php
         $relations = \App\Models\Relation::orderBy('term_order')
             ->get()
@@ -63,21 +31,6 @@
                 ];
             }
         } 
-        if(empty($children)) {
-            // w???????????????????????????????????????????????????????w
-            // $tabNiches = \App\Models\Niche::where('id', $niche_filter)->first(); 
-            // $tabHabitats = \App\Models\Habitat::where('id', $tabNiches->habitat_id)->first();
-            // // agora procura na tabela termos filtrando pelo habitat ou niche (mas NÃO TEM ID_NICHE ???????????);  
-            // $tabTerms = \App\Models\Term::where('id_niche', $niche_filter)->get();
-            // dd($tabHabitats);
-            $bt_filter = $tabNiches->id;
-            $id_term_bt = $niche_filter;
-            $children[$bt_filter][] = [
-                'id_term_nt' => $id_term_bt,
-                'term_order' => 0,
-            ];
-        }
-
 
         function nextTermOrder($id_termo_bt, $children, $termOrder) {
             $filteredChildren = [];
@@ -96,6 +49,7 @@
             }
             return $maxOrder;
         }
+
         $id_term_nt = $children[$id_term_bt][0]['id_term_nt'] ?? null;
         if(!is_null($id_term_nt)) {
                 foreach ($children[$bt_filter] as $filho) {
@@ -106,11 +60,11 @@
             }
             $nextOrder = nextTermOrder($id_term_nt, $children, $term_order);
         } else {
-                    foreach ($children[$bt_filter] as $filho) {
-                        if ($filho['id_term_nt'] == $id_term_bt) {
-                            $id_term_nt = $filho['id_term_nt'];
-                            $term_order = $filho['term_order'];
-                        }
+            foreach ($children[$bt_filter] as $filho) {
+                if ($filho['id_term_nt'] == $id_term_bt) {
+                    $id_term_nt = $filho['id_term_nt'];
+                    $term_order = $filho['term_order'];
+                }
             }
             $nextOrder = nextTermOrder($id_term_nt, $children, $term_order);
         }
@@ -122,8 +76,6 @@
             }
         }
     @endphp
-
-
 
     <form method="POST" action="{{ route('term_create.store') }}" class="m-4">
         @csrf

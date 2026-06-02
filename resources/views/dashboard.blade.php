@@ -17,16 +17,25 @@
                     $habitat = $item->habitat->habitat;
                     $niche = $item->niche->niche;
                     $data = $item->niche->niche_data;
-                    // dd($data);
+
+                    if (is_string($data)) {
+                        $decodedData = json_decode($data, true);
+                        $data = (json_last_error() === JSON_ERROR_NONE && is_array($decodedData)) ? $decodedData : [];
+                    }
+
+                    if (!is_array($data)) {
+                        $data = [];
+                    }
+
                     $values = array_values($data);
-                    $second = $values[1];
+                    $second = $values[1] ?? null;
                 @endphp
                 
                 <li>
                     ID: {{ $item->id }}<br>
                     Habitat: {{ $item->habitat->habitat }}<br>
                     Niche: {{ $item->niche->niche }}<br>
-                    {{ is_array($second) ? json_encode($second) : $second }}<br>
+                    {{ is_array($second) ? json_encode($second) : ($second ?? '') }}<br>
 
                     {{-- Dados: {{ $data }}<br> --}}
                     @if ($habitat === 'NEAD')

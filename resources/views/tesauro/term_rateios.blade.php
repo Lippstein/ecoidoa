@@ -62,7 +62,7 @@
                                 61,62,63,64,65,66,67,68,69,70,
                                 71,72,73,74,75,76,77,78,79,80
                             ];
-                $lotteryNumbers = isset($data['lotteryNumbers']) ? (array) $data['lotteryNumbers'] : [1,2,3,4,5];
+                $lotteryNumbers = isset($data['lotteryNumbers']) ? (array) $data['lotteryNumbers'] : [];
                 $participants = isset($data['participants']) ? $data['participants'] : '';
                 $lotteryNumbers = old('lotteryNumbers', $lotteryNumbers);
                 $lotteryNumbers = is_array($lotteryNumbers) ? $lotteryNumbers : array_map('trim', explode(',', (string) $lotteryNumbers));
@@ -152,7 +152,8 @@
                 </div>
             </div>
             <div class="row mb-3">
-                <button type="submit" class="btn btn-primary">Atualizar</button>
+                <button type="submit" class="btn btn-primary">Atualizar e APURAR!
+                </button>
             </div>
         </form>
     </div>

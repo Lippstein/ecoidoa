@@ -20,7 +20,7 @@ class UsersDataFlexSeeder extends Seeder
         "niche_id": 1,
         "user_profile": "{\"certificationEFSI\":\"Ensino Fundamental S\\u00e9ries Iniciais de Educa\\u00e7\\u00e3o de Jovens e Adultos\",\"conclusionCertificationEFSI\":\"2024\",\"ak1EFSIName\":\"LINGUAGENS E MATEM\\u00c1TICA\",\"ak1EFSIDescription\":\"L\\u00edngua Portuguesa e Matem\\u00e1tica\",\"ak1EFSIResult\":\"A\",\"ak1EFSIConclusion\":\"2024\",\"ak1EFSIObs\":\"A=Aprovado\",\"certificationEFSF\":\"Ensino Fundamental S\\u00e9ries Finais de Educa\\u00e7\\u00e3o de Jovens e Adultos\",\"conclusionCertificationEFSF\":\"2025\",\"ak1EFSFName\":\"LINGUAGENS\",\"ak1EFSFDescription\":\"L\\u00edngua Portuguesa, L\\u00edngua Inglesa, Arte e Educa\\u00e7\\u00e3o F\\u00edsica\",\"ak1EFSFResult\":\"A\",\"ak1EFSFConclusion\":\"17\\\/07\\\/2025\",\"ak1EFSFObs\":\"A=Aprovado\",\"ak2EFSFName\":\"MATEM\\u00c1TICA\",\"ak2EFSFDescription\":\"Matem\\u00e1tica\",\"ak2EFSFResult\":\"A\",\"ak2EFSFConclusion\":\"15\\\/07\\\/2025\",\"ak2EFSFObs\":\"A=Aprovado\",\"ak3EFSFName\":\"CI\\u00caNCIAS DA NATUREZA\",\"ak3EFSFDescription\":\"Ci\\u00eancias\",\"ak3EFSFResult\":\"A\",\"ak3EFSFConclusion\":\"30\\\/06\\\/2025\",\"ak3EFSFObs\":\"A=Aprovado\",\"ak4EFSFName\":\"CI\\u00caNCIAS HUMANAS\",\"ak4EFSFDescription\":\"Geografia e Hist\\u00f3ria\",\"ak4EFSFResult\":\"A\",\"ak4EFSFConclusion\":\"08\\\/07\\\/2025\",\"ak4EFSFObs\":\"A=Aprovado\",\"certificationEMAF\":\"Ensino M\\u00e9dio de Educa\\u00e7\\u00e3o de Jovens e Adultos\",\"conclusionCertificationEMAF\":\"Cursando\",\"ak1EMAFName\":\"LINGUAGENS E SUAS TECNOLOGIAS\",\"ak1EMAFDescription\":\"L\\u00edngua Portuguesa, Literatura, L\\u00edngua Espanhola, L\\u00edngua Inglesa, Arte e Educa\\u00e7\\u00e3o F\\u00edsica\",\"ak1EMAFResult\":\"A\",\"ak1EMAFConclusion\":\"04\\\/09\\\/2025\",\"ak1EMAFObs\":\"A=Aprovado - Aproveitamento de estudos do Exame Nacional do Ensino M\\u00e9dio, ENEM\\\/2015, SEDUC, Porto Alegre\\\/RS.\",\"ak2EMAFName\":\"MATEM\\u00c1TICA E SUAS TECNOLOGIAS\",\"ak2EMAFDescription\":\"Matem\\u00e1tica\",\"ak2EMAFResult\":\"6,00\",\"ak2EMAFConclusion\":\"10\\\/09\\\/2025\",\"ak2EMAFObs\":null,\"ak3EMAFName\":\"CI\\u00caNCIAS DA NATUREZA E SUAS TECNOLOGIAS\",\"ak3EMAFDescription\":\"F\\u00edsica, Qu\\u00edmica e Biologia\",\"ak3EMAFResult\":\"5,67\",\"ak3EMAFConclusion\":\"25\\\/08\\\/2025\",\"ak3EMAFObs\":null,\"ak4EMAFName\":\"CI\\u00caNCIAS HUMANAS E SOCIAIS APLICADAS\",\"ak4EMAFDescription\":\"Geografia, Hist\\u00f3ria, Sociologia e Filosofia\",\"ak4EMAFResult\":null,\"ak4EMAFConclusion\":null,\"ak4EMAFObs\":null,\"totalPrize\":8.57,\"availableBalance\":0.93,\"totalCredits\":0.93}",
         "created_at": "2026-02-12 13:11:01",
-        "updated_at": "2026-05-21 10:44:26"
+        "updated_at": "2026-06-01 16:48:37"
     },
     {
         "user_id": 1,
@@ -34,9 +34,9 @@ class UsersDataFlexSeeder extends Seeder
         "user_id": 2,
         "habitat_id": 2,
         "niche_id": 3,
-        "user_profile": "{\"maintenance\":\"5.00\",\"lotteryNumbersUser\":[\"3\",\"12\",\"40\",\"48\",\"50\"],\"availableBalance\":79.5059244544,\"totalCredits\":0.5059244544,\"totalDebts\":21}",
+        "user_profile": "{\"maintenance\":\"5.00\",\"lotteryNumbersUser\":[\"3\",\"12\",\"40\",\"48\",\"50\"],\"availableBalance\":76.51,\"totalCredits\":0.51,\"totalDebts\":24}",
         "created_at": "2026-02-12 13:11:02",
-        "updated_at": "2026-05-28 08:16:31"
+        "updated_at": "2026-06-01 16:27:42"
     },
     {
         "user_id": 2,
@@ -50,9 +50,9 @@ class UsersDataFlexSeeder extends Seeder
         "user_id": 4,
         "habitat_id": 2,
         "niche_id": 3,
-        "user_profile": "{\"maintenance\":5,\"lotteryNumbersUser\":[\"1\",\"2\",\"3\",\"12\",\"40\"],\"availableBalance\":79.5059244544,\"totalCredits\":0.5059244544,\"totalDebts\":21}",
+        "user_profile": "{\"maintenance\":\"5.00\",\"lotteryNumbersUser\":[\"1\",\"2\",\"3\",\"12\",\"40\"],\"availableBalance\":76.51,\"totalCredits\":0.51,\"totalDebts\":24}",
         "created_at": "2026-04-12 22:05:02",
-        "updated_at": "2026-05-28 08:16:31"
+        "updated_at": "2026-06-01 16:27:42"
     }
 ]
 JSON
