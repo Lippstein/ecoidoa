@@ -21,10 +21,11 @@
                                 try { $data = json_decode($data, true); } 
                                 catch (\Throwable $e) { $data = []; }
                             }
+                            $habitatUrl = $data['habitat_url'] ?? ($data['habitaturl'] ?? null);
                         @endphp
                         <div style="padding:10px 14px; border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc;">
-                            @if(!empty($data['habitaturl']))
-                                <a href="{{ $data['habitaturl'] }}" target="_blank" class="inline-flex items-center space-x-1 font-medium underline underline-offset-4 text-[#f53003] dark:text-[#FF4433] ml-1">
+                            @if(!empty($habitatUrl))
+                                <a href="{{ $habitatUrl }}" target="_blank" class="inline-flex items-center space-x-1 font-medium underline underline-offset-4 text-[#f53003] dark:text-[#FF4433] ml-1">
                                     <div style="font-size:14px; font-weight:600; color:#0f172a;">{{ $h->habitat }}</div>
                                 </a>
                             @else

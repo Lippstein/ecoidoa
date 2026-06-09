@@ -35,6 +35,10 @@
                     ID: {{ $item->id }}<br>
                     Habitat: {{ $item->habitat->habitat }}<br>
                     Niche: {{ $item->niche->niche }}<br>
+                    <a href="{{ url('usersDataFlex/usersDataFlex_edit/' . $item->id) }}">
+                        Editar
+                    </a><br>
+
                     {{ is_array($second) ? json_encode($second) : ($second ?? '') }}<br>
 
                     {{-- Dados: {{ $data }}<br> --}}

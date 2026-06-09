@@ -6,10 +6,13 @@
             <h4 class="text-center">Editar Perfil do Usuário - Nicho {{ $niche->id }}</h4>
         </div>
         <div class="d-flex justify-content-end gap-2 mb-3">
+        @if (Auth::user()->level >= 5)
             <button type="button" class="btn btn-warning" onclick="toggleReadonly()">
                 Habilitar Edição
             </button>
             <a href="{{ route('usersDataFlex_list.show', $userDataFlex->user_id) }}" class="btn btn-info">Voltar Lista Perfil</a>
+        @endif
+
         </div>
         <div class="row mb-2">
             <div>
@@ -49,6 +52,7 @@
                 $creditorUsers = isset($data['creditorUsers']) ? $data['creditorUsers'] : 'Usuários Credores';
                 $results = isset($data['results']) ? $data['results'] : 'Resultados não cadastrados';
                 $maintenance = isset($data['maintenance']) ? $data['maintenance'] : 0;
+                $invite = isset($data['invite']) ? $data['invite'] : 'Convite não gerado';
                 $lotteryNumbersUser = old('lotteryNumbersUser', $lotteryNumbersUser);
                 $lotteryNumbersUser = is_array($lotteryNumbersUser) ? $lotteryNumbersUser : array_map('trim', explode(',', (string) $lotteryNumbersUser));
                 $lotteryNumbersUser = array_values(array_slice(array_map('intval', $lotteryNumbersUser), 0, 5));
@@ -59,7 +63,7 @@
                 $creditorUsers = old('creditorUsers', $data['creditorUsers'] ?? '');
                 $results = old('results', $data['results'] ?? '');
                 $maintenance = old('maintenance', $data['maintenance'] ?? 0);
-
+                $invite = old('invite', $data['invite'] ?? '');
                 $moneyToFloat = static function ($value): float {
                     if (!is_string($value)) {
                         return (float) $value;
@@ -153,33 +157,25 @@
                 <div class="col-sm-3">
                     <input type="text" inputmode="decimal" class="form-control readonly-field bg-info text-white" id="availableBalance" name="availableBalance" value="{{ $availableBalanceDisplay }}" readonly>
                 </div>
-                {{-- <div class="col-sm-5">
-                    <a href="{{ route('usersDataFlex_results.show', ['udf_id' => $userDataFlex->id]) }}" class="btn btn-link p-0 readonly-field bg-info text-white" >
-                        {{ 'Resultados de todos os Rateios' }}
-                    </a>
-                </div> --}}
             </div>
             <div class="row mb-2">
                 <label  class="col-sm-2 col-form-label" for="totalCredits"><strong>Total de Créditos:</strong></label>
                 <div class="col-sm-3">
                     <input type="text" inputmode="decimal" class="form-control readonly-field bg-info text-white" id="totalCredits" name="totalCredits" value="{{ $totalCreditsDisplay }}" readonly>
                 </div>
-                {{-- <div class="col-sm-5">
-                    <a href="{{ route('usersDataFlex_indebtedUsers.show', ['udf_id' => $userDataFlex->id]) }}" class="btn btn-link p-0 readonly-field bg-info text-white" >
-                        {{ 'Devedores dos meus Créditos' }}
-                    </a>
-                </div> --}}
+
             </div>
             <div class="row mb-2">
                 <label  class="col-sm-2 col-form-label" for="totalDebts"><strong>Total de Débitos:</strong></label>
                 <div class="col-sm-3">
                     <input type="text" inputmode="decimal" class="form-control readonly-field bg-info text-white" id="totalDebts" name="totalDebts" value="{{ $totalDebtsDisplay }}" readonly>
                 </div>
-                {{-- <div class="col-sm-5">
-                    <a href="{{ route('usersDataFlex_creditorUsers.show', ['udf_id' => $userDataFlex->id]) }}" class="btn btn-link p-0 readonly-field bg-info text-white" >
-                        {{ 'Credores dos meus Débitos' }}
-                    </a>
-                </div> --}}
+            </div>
+            <div class="row mb-2">
+                <label  class="col-sm-2 col-form-label" for="invite"><strong>Senha de Convite:</strong></label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control readonly-field bg-info text-white" id="invite" name="invite" value="{{ $invite }}">
+                </div>
             </div>
             <div class="py-2 mb-4 rounded">
                 <hr style="margin:8px 0; opacity:.3;">

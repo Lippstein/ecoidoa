@@ -57,7 +57,6 @@ use App\Models\UsersDataFlex;
                                                         ->where('niche_id', $niche->id)
                                                         ->where('habitat_id', $h->id)
                                                         ->exists();
-                                                        // DD($exists);
                                                     if ($exists){
                                                         $aux='disabled'; 
                                                     }
@@ -72,7 +71,7 @@ use App\Models\UsersDataFlex;
                                                 </div>
                                                 @if(in_array($niche->id, [3,4]))
                                                     <div style="font-size: 10px; margin-left:24px; padding:6px 10px; background:#cbd5e1; border-radius:8px;">
-                                                        <input type="text" class="form-control form-control-sm" name="invite_{{ $niche->id }}" id="invite_{{ $niche->id }}" style="margin-right:10px;" maxlength="20" placeholder="Convite do Nicho!">
+                                                        <input type="text" class="form-control form-control-sm" name="invite_{{$niche->id}}" id="invite_{{$niche->id}}" style="margin-right:10px;" maxlength="20" placeholder="Convite do Nicho!">
                                                     </div>
                                                 @endif
                                             @empty

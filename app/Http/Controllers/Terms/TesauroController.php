@@ -740,7 +740,7 @@ class TesauroController extends Controller
         $valueUser1hits = 0.0;
         $availableBalanceNextAux = (float) ($termData['rateios'][0]['availableBalance_Next'] ?? 0); // vai ler com valor zero
         $availableBalanceFinal5Aux = (float) ($termData['rateios'][0]['availableBalance_Final5'] ?? 0); // vai ler com valor zero
-        $availableBalanceSpecialAux = (float) ($termData['rateios'][0]['availableBalance_Special'] ?? 0);
+        $availableBalanceSpecialAux = (float) ($termData['rateios'][0]['availableBalance_Special'] ?? 0); // vai ler com valor zero
 
         if ($primeiraDataJunho->equalTo($dataConcurso)) {
             //************ calculo do especial */

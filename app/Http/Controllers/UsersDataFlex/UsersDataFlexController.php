@@ -28,11 +28,33 @@ class UsersDataFlexController extends Controller
      */
     public function saveHabitatsNiches(Request $request)
     { 
+        $cvt = UsersDataFlex::select('user_id', 'user_profile')
+            ->get()
+            ->map(function ($row) {
+                $userProfile = $row->user_profile;
+
+                if (is_string($userProfile)) {
+                    $decodedProfile = json_decode($userProfile, true);
+                    $userProfile = is_array($decodedProfile) ? $decodedProfile : [];
+                }
+
+                $invite = '';
+                if (is_array($userProfile)) {
+                    $invite = (string) ($userProfile['invite'] ?? '');
+                }
+
+                return [
+                    'user_id' => $row->user_id,
+                    'invite' => $invite,
+                ];
+            })
+            ->toArray();
+
         $data = json_decode($request->input('u_n_h_id'), true);
         $n_id = $data['n_id'];
         $h_id = $data['h_id'];
-        $invite_3 = $request->input('invite_3');
-        $invite_4 = $request->input('invite_4');
+        $invite_3 = trim($request->input('invite_3'));
+        $invite_4 = trim($request->input('invite_4'));
         // validação: note 'exists:table,id' usando o nome da coluna no DB
         $validator = Validator::make($data, [
             'n_id' => 'required|integer|exists:niches,id',
@@ -44,20 +66,39 @@ class UsersDataFlexController extends Controller
         // normaliza/force o tipo
         $nicheId = (int) $validated['n_id'];
         $habitatId = (int) $validated['h_id'];
-        $invite_3 = $request->input('invite_3') ? trim($request->input('invite_3')) : null;
-        $invite_4 = $request->input('invite_4') ? trim($request->input('invite_4')) : null;
-        // dd(strtoupper($invite_3), strtoupper($invite_4));
-        if(($n_id == 3 && strtoupper($invite_3) !== 'HABITATDEADULTOS') || ($n_id == 4 && strtoupper($invite_4) !== 'HABITATDEADULTOS')) {
+        if($nicheId == 3) {
+            $invited_by = $invite_3 ?? null;
+        } elseif($nicheId == 4) {
+            $invited_by = $invite_4 ?? null;
+        } else {
+            $invited_by = null;
+        }
+
+        $inviteFound = false;
+        $inviteOfUser = '0'; // valor padrão caso não encontre o convite
+        foreach ($cvt as $item) {
+            if ((string) (strtoupper($item['invite'] ?? '')) === (string) (strtoupper($invited_by ?? ''))) {
+                $inviteFound = true;
+                $inviteOfUser = $item['user_id'];
+                break;
+            }
+        }
+
+        if ((($nicheId == 3) || ($nicheId == 4)) && !$inviteFound) {
             return redirect()->back()
-                ->withErrors(['invite' => 'Convite inválido para este nicho.'])
+                ->withErrors(['invited_by' => 'Convite inválido para este nicho.'])
                 ->withInput();
         }
+
 
         // salvar
         $userDataFlex = new UsersDataFlex();
         $userDataFlex->user_id = Auth::id();
         $userDataFlex->niche_id = $nicheId;
         $userDataFlex->habitat_id = $habitatId;
+        $userDataFlex->user_profile = [
+            'invited_by' => $inviteOfUser,
+        ];
         $userDataFlex->save();
         event(new Registered(Auth::user()));
         return redirect()->route('dashboard')
@@ -244,19 +285,20 @@ class UsersDataFlexController extends Controller
                     'ak4EMAFObs' => 'nullable|string|max:150'
                 ]);
         } elseif($idNiche == 2) {
-            // $validated = $request->validate([
-            //         'lotteryNumbers' => 'required|array|size:5',
-            //         'availableBalance' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
-            //         'totalCredits' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
-            //         'totalDebts' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
-            //     ]);
+            $validated = $request->validate([
+                    // 'lotteryNumbers' => 'required|array|size:5',
+                    // 'availableBalance' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
+                    // 'totalCredits' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
+                    // 'totalDebts' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
+                ]);
         } elseif($idNiche == 3) {
             $validated = $request->validate([
                 'maintenance' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
                 'lotteryNumbersUser' => 'required|array|size:5',
                 'availableBalance' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
                 'totalCredits' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
-                'totalDebts' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/']
+                'totalDebts' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
+                'invite' => ['required', 'string', 'max:30']
                 ]);
 
         } elseif($idNiche == 4) {
@@ -265,7 +307,8 @@ class UsersDataFlexController extends Controller
                 'lotteryNumbersUser' => 'required|array|size:5',
                 'availableBalance' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
                 'totalCredits' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
-                'totalDebts' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/']
+                'totalDebts' => ['required', 'numeric', 'regex:/^\d+(\.\d{2})?$/'],
+                'invite' => ['required', 'string', 'max:30']
                 ]);
         } else {
             return redirect()->back()
@@ -273,7 +316,23 @@ class UsersDataFlexController extends Controller
                 ->withInput();
         }
 
-        $userDataFlex->user_profile = $validated;
+        $currentProfile = $userDataFlex->user_profile;
+        if (is_string($currentProfile)) {
+            $decodedProfile = json_decode($currentProfile, true);
+            $currentProfile = is_array($decodedProfile) ? $decodedProfile : [];
+        }
+        if (!is_array($currentProfile)) {
+            $currentProfile = [];
+        }
+
+        $updatedProfile = $currentProfile;
+        foreach ($validated as $key => $value) {
+            if (!array_key_exists($key, $updatedProfile) || $updatedProfile[$key] !== $value) {
+                $updatedProfile[$key] = $value;
+            }
+        }
+
+        $userDataFlex->user_profile = $updatedProfile;
         $userDataFlex->save();
         return redirect()->route('usersDataFlex_edit.show', $userDataFlex->id)
             ->with('status', 'Perfil atualizado com sucesso!');

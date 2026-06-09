@@ -119,4 +119,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Route::get('/usersDataFlex/indebtedUsers/{udf_id}', [UsersDataFlexController::class, 'showIndebtedUsersForm'])->name('usersDataFlex_indebtedUsers.show');
     // Route::get('/usersDataFlex/creditorUsers/{udf_id}', [UsersDataFlexController::class, 'showCreditorUsersForm'])->name('usersDataFlex_creditorUsers.show');
     // Route::get('/usersDataFlex/results/{udf_id}', [UsersDataFlexController::class, 'showResultsForm'])->name('usersDataFlex_results.show');
+
+    // https://youtu.be/dpJDV25tptw?si=vyALHH9RrJtRslRD
 });
