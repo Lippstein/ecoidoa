@@ -116,7 +116,7 @@
                             </div>                            
                         @endforeach
                     </div>
-                    <small id="lotteryNumbersCounter" class="form-text text-muted d-block mt-2">Selecionados: {{ count($lotteryNumbersUser) }}/5</small>
+                    <small id="lotteryNumbersCounter" class="form-text text-muted d-block mt-2">Para NÃO participar, deixe pelo menos um número em branco. Selecionados: {{ count($lotteryNumbersUser) }}/5</small>
                     <div id="lotteryNumbersLimitWarning" class="alert alert-warning py-1 px-2 mt-2 mb-0 d-none" role="alert">
                         Você pode selecionar no máximo 5 números.
                     </div>
@@ -180,9 +180,15 @@
             <div class="py-2 mb-4 rounded">
                 <hr style="margin:8px 0; opacity:.3;">
             </div>
-            <div class="row mb-3">
-                <button type="submit" class="btn btn-primary">Atualizar</button>
-            </div>
+            @if (now('America/Sao_Paulo')->hour < 19 || now('America/Sao_Paulo')->hour > 23)
+                <div class="row mb-3">
+                    <button type="submit" class="btn btn-primary">Atualizar</button>
+                </div>
+            @else
+                <div class="row mb-3">
+                    <button type="button" class="btn btn-secondary" disabled>Atualizando o sistema. Aguarde!</button>
+                </div>
+            @endif
         </form>
 
         <div class="accordion accordion-flush" id="accordionFlushExample">
@@ -444,6 +450,11 @@
 
             if (counter) {
                 counter.textContent = `Selecionados: ${selected.size}/5`;
+                if (selected.size < 5) {
+                    counter.textContent += ' - Você NÃO está participando dos RATEIOS automáticos!!!';
+                } else {
+                    counter.textContent += ' - Você ESTÁ participando dos RATEIOS automáticos!!!';
+                }
             }
         }
 

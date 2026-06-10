@@ -31,8 +31,6 @@
         $availableBalance_Final5 = old('availableBalance_Final5', $data['availableBalance_Final5'] ?? 0);
         $availableBalance_Special = old('availableBalance_Special', $data['availableBalance_Special'] ?? 0);
 
-
-
     @endphp
 
         <form method="POST" action="{{ route('term_rateios.store', $term->id) }}"  class="m-4 question-form" enctype="multipart/form-data">
@@ -128,7 +126,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="row mb-2">
                 <label  class="col-sm-2 col-form-label" for="lotteryNumbers"><strong>Números Sorteio:</strong></label>
                 <div class="col-sm-8">
