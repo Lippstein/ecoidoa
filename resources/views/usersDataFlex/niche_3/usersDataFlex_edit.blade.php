@@ -6,13 +6,15 @@
             <h4 class="text-center">Editar Perfil do Usuário - Nicho {{ $niche->id }}</h4>
         </div>
         <div class="d-flex justify-content-end gap-2 mb-3">
-        @if (Auth::user()->level >= 5)
-            <button type="button" class="btn btn-warning" onclick="toggleReadonly()">
-                Habilitar Edição
-            </button>
-            <a href="{{ route('usersDataFlex_list.show', $userDataFlex->user_id) }}" class="btn btn-info">Voltar Lista Perfil</a>
-        @endif
-
+            @if (Auth::user()->level >= 5)
+                <button type="button" class="btn btn-warning" onclick="toggleReadonly()">
+                    Habilitar Edição
+                </button>
+                <a href="{{ route('usersDataFlex_list.show', $userDataFlex->user_id) }}" class="btn btn-info">Lista de Perfis</a>
+                <a href="{{ route('usersDataFlex_resultados.show', ['user_id' => $userDataFlex->user_id, 'niche_id' => $userDataFlex->niche_id]) }}" class="btn btn-info">Resultados</a>
+            @else
+                <a href="{{ route('usersDataFlex_resultados.show', ['user_id' => $userDataFlex->user_id, 'niche_id' => $userDataFlex->niche_id]) }}" class="btn btn-info">Resultados</a>
+            @endif
         </div>
         <div class="row mb-2">
             <div>
@@ -180,127 +182,10 @@
             <div class="py-2 mb-4 rounded">
                 <hr style="margin:8px 0; opacity:.3;">
             </div>
-            @if (now('America/Sao_Paulo')->hour < 19 || now('America/Sao_Paulo')->hour > 23)
-                <div class="row mb-3">
-                    <button type="submit" class="btn btn-primary">Atualizar</button>
-                </div>
-            @else
-                <div class="row mb-3">
-                    <button type="button" class="btn btn-secondary" disabled>Atualizando o sistema. Aguarde!</button>
-                </div>
-            @endif
-        </form>
-
-        <div class="accordion accordion-flush" id="accordionFlushExample">
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
-                <strong>Lista de todos os Rateios do Usuário ({{ $user->name }} - Perfil ID: {{ $userDataFlex->id }} - Niche ID: {{ $userDataFlex->niche_id }})</strong>
-            </button>
-            </h2>
-            <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-                <div class="accordion-body">
-                    @php
-                        $formatMoneyRateio = static fn ($value): string => 'R$ ' . number_format((float) $value, 2, ',', '.');
-                    @endphp
-
-                    @if (empty($userRateiosByNiche))
-                        <div class="alert alert-secondary mb-0">
-                            Este usuário ainda não aparece como participante em nenhum rateio.
-                        </div>
-                    @else
-                        @foreach ($userRateiosByNiche as $nicheIdRateio => $rateiosList)
-                            <div class="card mb-3">
-                                <div class="card-header bg-light">
-                                    <strong>Nicho {{ $nicheIdRateio }}</strong>
-                                    <span class="text-muted">- {{ count($rateiosList) }} rateio(s)</span>
-                                </div>
-                                <div class="card-body">
-                                    @foreach ($rateiosList as $rateioEntry)
-                                        @php
-                                            $rateio = $rateioEntry['rateio'] ?? [];
-                                            $participant = $rateioEntry['participant'] ?? [];
-                                            $numbersUser = $rateioEntry['lotteryNumbersUser'] ?? [];
-                                            $numbersRateio = $rateioEntry['lotteryNumbersRateio'] ?? [];
-                                            $numbersRateioSet = array_flip($numbersRateio);
-                                            $numbersUserSet = array_flip($numbersUser);
-                                        @endphp
-
-                                        <div class="border rounded p-3 mb-3">
-                                            <div class="d-flex flex-wrap gap-3 mb-2">
-                                                <div><strong>Rateio:</strong> {{ $rateio['concourseCEFNumber'] ?? '-' }}</div>
-                                                <div><strong>Data:</strong> {{ $rateio['concourseCEFDate'] ?? '-' }}</div>
-                                                <div><strong>Termo:</strong> {{ $rateioEntry['term'] ?? '-' }} (ID {{ $rateioEntry['term_id'] ?? '-' }})</div>
-                                                <div><strong>Acertos:</strong> {{ $rateioEntry['hitsCount'] ?? 0 }}</div>
-                                            </div>
-                                            <div class="row mb-3">
-                                                <div class="col-12 col-md-6 mb-2">
-                                                    <strong>Números do usuário (em destaque quando sorteado):</strong><br>
-                                                    @forelse ($numbersUser as $number)
-                                                        <span class="badge number-badge {{ isset($numbersRateioSet[$number]) ? 'bg-success' : 'bg-secondary' }}">{{ $number }}</span>
-                                                    @empty
-                                                        <span class="text-muted">Sem números informados.</span>
-                                                    @endforelse
-                                                </div>
-                                                <div class="col-12 col-md-6 mb-2">
-                                                    <strong>Números do rateio:</strong><br>
-                                                    @forelse ($numbersRateio as $number)
-                                                        <span class="badge number-badge {{ isset($numbersUserSet[$number]) ? 'bg-success' : 'bg-dark' }}">{{ $number }}</span>
-                                                    @empty
-                                                        <span class="text-muted">Sem números sorteados.</span>
-                                                    @endforelse
-                                                </div>
-                                            </div>
-                                            <div class="row g-2">
-                                                <div class="col-md-3"><strong>Contribuição:</strong> {{ $formatMoneyRateio($participant['contribution'] ?? 0) }}</div>
-                                                <div class="col-md-3"><strong>Total Contribuições:</strong> {{ $formatMoneyRateio($rateio['totalRateio'] ?? 0) }}</div>
-                                                <div class="col-md-3"><strong>Total Premio:</strong> {{ $formatMoneyRateio($rateio['totalPrize'] ?? 0) }}</div>
-                                            </div>
-                                            <div class="row g-2">
-                                                <div class="col-md-3"><strong>Acum. Próximo:</strong> {{ $formatMoneyRateio($rateio['availableBalance_Next'] ?? 0) }}</div>
-                                                <div class="col-md-3"><strong>Acum. Final 5:</strong> {{ $formatMoneyRateio($rateio['availableBalance_Final5'] ?? 0) }}</div>
-                                                <div class="col-md-3"><strong>Acum. Especial:</strong> {{ $formatMoneyRateio($rateio['availableBalance_Special'] ?? 0) }}</div>
-                                            </div>
-                                            <div class="row g-2">
-                                                <div class="col-md-3"><strong>5 acertos:</strong> {{ count($rateio['5_hits'] ?? []) }} Ganhador(es)</div>
-                                                <div class="col-md-3"><strong>{{ count($rateio['5_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 5 acertos:</strong> {{ $formatMoneyRateio(count($rateio['5_hits'] ?? []) > 0 ? $rateio['value_5_hits']/count($rateio['5_hits']) : $rateio['value_5_hits'] ?? 0) }} </div>
-                                                <div class="col-md-3">{{ 'Total: (' . $formatMoneyRateio($rateio['value_5_hits'] ?? 0) . ')' }}</div>
-                                            </div>
-                                            <div class="row g-2">
-                                                <div class="col-md-3"><strong>4 acertos:</strong> {{ count($rateio['4_hits'] ?? []) }} Ganhador(es)</div>
-                                                <div class="col-md-3"><strong>{{ count($rateio['4_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 4 acertos:</strong> {{ $formatMoneyRateio(count($rateio['4_hits'] ?? []) > 0 ? $rateio['value_4_hits']/count($rateio['4_hits']) : $rateio['value_4_hits'] ?? 0) }} </div>
-                                                <div class="col-md-3">{{ 'Total: (' . $formatMoneyRateio($rateio['value_4_hits'] ?? 0) . ')' }}</div>
-                                            </div>
-                                            <div class="row g-2">
-                                                <div class="col-md-3"><strong>3 acertos:</strong> {{ count($rateio['3_hits'] ?? []) }} Ganhador(es)</div>
-                                                <div class="col-md-3"><strong>{{ count($rateio['3_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 3 acertos:</strong> {{ $formatMoneyRateio(count($rateio['3_hits'] ?? []) > 0 ? $rateio['value_3_hits']/count($rateio['3_hits']) : $rateio['value_3_hits'] ?? 0) }} </div>
-                                                <div class="col-md-3">{{ 'Total: (' . $formatMoneyRateio($rateio['value_3_hits'] ?? 0) . ')' }}</div>
-                                            </div>
-                                            <div class="row g-2">
-                                                <div class="col-md-3"><strong>2 acertos:</strong> {{ count($rateio['2_hits'] ?? []) }} Ganhador(es)</div>
-                                                <div class="col-md-3"><strong>{{ count($rateio['2_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 2 acertos:</strong> {{ $formatMoneyRateio(count($rateio['2_hits'] ?? []) > 0 ? $rateio['value_2_hits']/count($rateio['2_hits']) : $rateio['value_2_hits'] ?? 0) }} </div>
-                                                <div class="col-md-3">{{ 'Total: (' . $formatMoneyRateio($rateio['value_2_hits'] ?? 0) . ')' }}</div>
-                                            </div>
-                                            <div class="row g-2">
-                                                <div class="col-md-3"><strong>1 acertos:</strong> {{ count($rateio['1_hits'] ?? []) }} Ganhador(es)</div>
-                                                <div class="col-md-3"><strong>{{ count($rateio['1_hits'] ?? []) > 0 ? "Prêmio" : "Acumulado" }} 1 acertos:</strong> {{ $formatMoneyRateio(count($rateio['1_hits'] ?? []) > 0 ? $rateio['value_1_hits']/count($rateio['1_hits']) : $rateio['value_1_hits'] ?? 0) }} </div>
-                                                <div class="col-md-3">{{ 'Total: (' . $formatMoneyRateio($rateio['value_1_hits'] ?? 0) . ')' }}</div>
-                                            </div>
-
-                                            {{-- <details class="mt-3">
-                                                <summary><strong>Ver todas as informações do rateio (JSON completo)</strong></summary>
-                                                <pre class="rateio-json mb-0 mt-2">{{ json_encode($rateio, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</pre>
-                                            </details> --}}
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endforeach
-                    @endif
-                </div>
+            <div class="row mb-3">
+                <button type="submit" class="btn btn-primary">Atualizar</button>
             </div>
-        </div>
-        </div>
+        </form>
     </div>
 
     <style>

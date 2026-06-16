@@ -125,101 +125,7 @@ class UsersDataFlexController extends Controller
         $userDataFlex = UsersDataFlex::findOrFail($id);
         $user = \App\Models\User::findOrFail($userDataFlex->user_id);
         $niche = \App\Models\Niche::findOrFail($userDataFlex->niche_id);
-
-        $userRateiosByNiche = [];
-        $terms = \App\Models\Term::select('id', 'id_niche', 'term', 'definition', 'created_at', 'term_data')
-            ->whereNotNull('term_data')
-            ->get();
-
-        foreach ($terms as $term) {
-            $termData = $term->term_data;
-            if (is_string($termData)) {
-                $decoded = json_decode($termData, true);
-                $termData = is_array($decoded) ? $decoded : [];
-            }
-
-            if (!is_array($termData)) {
-                continue;
-            }
-
-            $rateios = $termData['rateios'] ?? [];
-            if (!is_array($rateios)) {
-                continue;
-            }
-
-            foreach ($rateios as $rateioIndex => $rateio) {
-                if (!is_array($rateio)) {
-                    continue;
-                }
-
-                $participants = $rateio['participants'] ?? [];
-                if (!is_array($participants)) {
-                    continue;
-                }
-
-                foreach ($participants as $participant) {
-                    if (!is_array($participant)) {
-                        continue;
-                    }
-
-                    if ((int) ($participant['user_id'] ?? 0) !== (int) $userDataFlex->user_id) {
-                        continue;
-                    }
-
-                    $lotteryNumbersUser = $participant['lotteryNumbersUser'] ?? ($participant['lotteryNumbers'] ?? []);
-                    if (is_string($lotteryNumbersUser)) {
-                        $lotteryNumbersUser = array_map('trim', explode(',', $lotteryNumbersUser));
-                    }
-
-                    $lotteryNumbersUser = array_values(array_filter(
-                        array_map('intval', is_array($lotteryNumbersUser) ? $lotteryNumbersUser : []),
-                        fn ($number) => $number >= 1 && $number <= 80
-                    ));
-                    sort($lotteryNumbersUser);
-
-                    $lotteryNumbersRateio = array_values(array_map(
-                        'intval',
-                        is_array($rateio['lotteryNumbers'] ?? null) ? $rateio['lotteryNumbers'] : []
-                    ));
-                    sort($lotteryNumbersRateio);
-
-                    $hitsCount = count(array_intersect($lotteryNumbersUser, $lotteryNumbersRateio));
-
-                    $userRateiosByNiche[$term->id_niche][] = [
-                        'term_id' => $term->id,
-                        'term' => $term->term,
-                        'definition' => $term->definition,
-                        'term_created_at' => $term->created_at,
-                        'rateio_index' => $rateioIndex,
-                        'rateio' => $rateio,
-                        'participant' => $participant,
-                        'lotteryNumbersUser' => $lotteryNumbersUser,
-                        'lotteryNumbersRateio' => $lotteryNumbersRateio,
-                        'hitsCount' => $hitsCount,
-                    ];
-                }
-            }
-        }
-
-        if (!empty($userRateiosByNiche)) {
-            ksort($userRateiosByNiche);
-            foreach ($userRateiosByNiche as &$rateiosList) {
-                usort($rateiosList, function ($a, $b) {
-                    $dateA = (string) ($a['rateio']['concourseCEFDate'] ?? '');
-                    $dateB = (string) ($b['rateio']['concourseCEFDate'] ?? '');
-                    if ($dateA !== $dateB) {
-                        return strcmp($dateB, $dateA);
-                    }
-
-                    $numberA = (int) ($a['rateio']['concourseCEFNumber'] ?? 0);
-                    $numberB = (int) ($b['rateio']['concourseCEFNumber'] ?? 0);
-                    return $numberB <=> $numberA;
-                });
-            }
-            unset($rateiosList);
-        }
-
-        return view("usersDataFlex.niche_{$niche->id}.usersDataFlex_edit", compact('userDataFlex', 'user', 'niche', 'userRateiosByNiche'));
+        return view("usersDataFlex.niche_{$niche->id}.usersDataFlex_edit", compact('userDataFlex', 'user', 'niche'));
     }
 
 
@@ -228,6 +134,11 @@ class UsersDataFlexController extends Controller
      */
     public function updateUsersDataFlexForm(Request $request, $id)
     {
+        if (now('America/Sao_Paulo')->hour > 19 || now('America/Sao_Paulo')->hour < 22) {
+            return redirect()->back()
+                ->with('status', 'O sistema de atualização de perfil NÃO está disponível entre 19h e 22h.');
+        }
+
         $userDataFlex = UsersDataFlex::findOrFail($id);
         $idNiche = $userDataFlex->niche_id;
         if($idNiche == 1) {
@@ -351,7 +262,23 @@ class UsersDataFlexController extends Controller
             ->where('user_id', $id)
             ->paginate(10);
         $niche = $profiles->first()->niche;
-        return view("usersDataFlex.niche_{$niche->id}.usersDataFlex_list", compact('profiles', 'user_id', 'name', 'user'));
+        return view("usersDataFlex.usersDataFlex_list", compact('profiles', 'user_id', 'name', 'user'));
+        // return view("usersDataFlex.niche_{$niche->id}.usersDataFlex_list", compact('profiles', 'user_id', 'name', 'user'));
     }
+
+    /**
+     * Lista os registros de users_data_flex do usuário especificado.
+     */
+    public function resultadosUsersDataFlexForm($user_id, $niche_id)
+    {
+        $user = \App\Models\User::findOrFail($user_id);
+        $userDataFlex = UsersDataFlex::with(['habitat', 'niche'])
+            ->where('user_id', $user_id)
+            ->where('niche_id', $niche_id)
+            ->firstOrFail();
+        return view("usersDataFlex.niche_{$niche_id}.usersDataFlex_resultados", compact('userDataFlex', 'user', 'user_id', 'niche_id'));
+    }
+
+
 
 }

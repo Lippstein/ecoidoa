@@ -81,7 +81,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/niches/niches_destroy/{id}', [NicheController::class, 'destroyNichesForm'])->name('niches_destroy.show');
 
     Route::get('/usersDataFlex/usersDataFlex_list/{user_id}', [UsersDataFlexController::class, 'listUsersDataFlexForm'])->name('usersDataFlex_list.show');
-    // Route::get('/usersDataFlex/usersDataFlex_create/{user_id}', [UsersDataFlexController::class, 'createUsersDataFlexForm'])->name('usersDataFlex_create.show');
+    Route::get('/usersDataFlex/usersDataFlex_resultados/{user_id}/{niche_id}', [UsersDataFlexController::class, 'resultadosUsersDataFlexForm'])->name('usersDataFlex_resultados.show');
     Route::get('/usersDataFlex/usersDataFlex_show/{id}', [UsersDataFlexController::class, 'showUsersDataFlexForm'])->name('usersDataFlex_show.show');
     Route::get('/usersDataFlex/usersDataFlex_edit/{id}', [UsersDataFlexController::class, 'editUsersDataFlexForm'])->name('usersDataFlex_edit.show');
     Route::get('/usersDataFlex/usersDataFlex_destroy/{id}', [UsersDataFlexController::class, 'destroyUsersDataFlexForm'])->name('usersDataFlex_destroy.show');

@@ -546,8 +546,8 @@ class TesauroController extends Controller
         }
 
         $validated = $validator->validated();
-        $r4 = static fn ($value): float => round((float) $value, 4, PHP_ROUND_HALF_UP);
         $validated['lotteryNumbers'] = array_map('intval', $validated['lotteryNumbers']);
+        $r4 = static fn ($value): float => (float) number_format(round((float) $value, 4, PHP_ROUND_HALF_UP), 4);
 
         // O termo da tabela terms vem do nextTermName enviado pelo form.
         $validated['term'] = $validated['nextTermName'];
@@ -559,11 +559,11 @@ class TesauroController extends Controller
             'lotteryNumbers' => $validated['lotteryNumbers'] ?? [],
             'concourseCEFNumber' => $validated['concourseCEFNumber'] ?? '',
             'concourseCEFDate' => $validated['concourseCEFDate'] ?? '',
-            'totalRateio' => $r4($validated['totalRateio'] ?? 0),
-            'totalPrize' => $r4($validated['totalPrize'] ?? 0),
-            'availableBalance_Next' => $r4($validated['availableBalance_Next'] ?? 0),
-            'availableBalance_Final5' => $r4($validated['availableBalance_Final5'] ?? 0),
-            'availableBalance_Special' => $r4($validated['availableBalance_Special'] ?? 0),
+            'totalRateio' => $validated['totalRateio'] ?? 0,
+            'totalPrize' => $validated['totalPrize'] ?? 0,
+            'availableBalance_Next' => $validated['availableBalance_Next'] ?? 0,
+            'availableBalance_Final5' => $validated['availableBalance_Final5'] ?? 0,
+            'availableBalance_Special' => $validated['availableBalance_Special'] ?? 0,
             'participants' => [], // aqui você pode adicionar uma lógica para incluir os participantes do rateio, se necessário
         ];
 
@@ -571,7 +571,7 @@ class TesauroController extends Controller
         ${"creditsForNiche{$id_niche}"} = 0; // variável dinâmica para acumular os créditos por nicho
         foreach ($usersDataFlexList as $usersDataFlex) {
             $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
-            $maintenance = $r4($profile['maintenance'] ?? 0);
+            $maintenance = $profile['maintenance'] ?? 0;
             // cobrar a manutenção de 5 reais para cada participante do rateio, caso ainda não tenha sido cobrada (maintenance = 0), 
             if ($maintenance == 0.0) {
                 $maintenance = 5;
@@ -1100,17 +1100,17 @@ class TesauroController extends Controller
                     if ($usersDataFlex) {
                         $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = $r4($profile['availableBalance'] ?? 0);
-                            $totalCredits = $r4($profile['totalCredits'] ?? 0);
-                            $profile['availableBalance'] = $r4($availableBalance + $valueUser2hits);
-                            $profile['totalCredits'] = $r4($totalCredits + $valueUser2hits);
-                            $usersDataFlex->user_profile = $profile;
-                            $usersDataFlex->save();
-                        }
-                }
+                        $totalCredits = $r4($profile['totalCredits'] ?? 0);
+                        $profile['availableBalance'] = $r4($availableBalance + $valueUser2hits);
+                        $profile['totalCredits'] = $r4($totalCredits + $valueUser2hits);
+                        $usersDataFlex->user_profile = $profile;
+                        $usersDataFlex->save();
+                    }
             }
-            if ($hits1Count == 0) {
-                $availableBalanceNextAux = $r4($availableBalanceNextAux + $value1hits);
-            } else {
+        }
+        if ($hits1Count == 0) {
+            $availableBalanceNextAux = $r4($availableBalanceNextAux + $value1hits);
+        } else {
                 //distribuir o prêmio para cada ganhador de 1 acerto, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
                 $valueUser1hits = $r4($value1hits / $hits1Count);
                 foreach ($users1hits as $userId) {
