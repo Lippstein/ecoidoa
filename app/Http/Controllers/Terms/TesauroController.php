@@ -244,19 +244,21 @@ class TesauroController extends Controller
         if ($request->hasFile('new_doc')) {
             $file = $request->file('new_doc');
             $filename = $niche_filter . '_' . $term->id . '_' . $file->getClientOriginalName();
-            $dir = $niche_filter . '/docs';
+            $dir = 'niche_' . $niche_filter;
+            // $dir = $niche_filter . '/docs';
             if (!Storage::disk('public')->exists($dir)) {
                 // Diretório NÃO existe
                 Storage::disk('public')->makeDirectory($dir);
             }
             $storagePath = "public/{$dir}/{$filename}";
+
     
             $relativePath = "{$dir}/{$filename}";
 
             // Testa se já existe o arquivo no disco public
             if (Storage::disk('public')->exists($relativePath)) {
                 return back()->withErrors([
-                    'new_doc' => 'Já existe um arquivo com esse nome para este termo no nicho!'
+                    'new_doc' => 'Já existe um arquivo PDF com esse nome!'
                 ]);
             }
 
@@ -329,7 +331,7 @@ class TesauroController extends Controller
 
         $validator = Validator::make($request->all(), [
             'question_type' => ['required','string', 'in:Resposta_Unica,Resposta_Multipla,Afirmacao_Incompleta,Foco_Negativo,Assercao_Razao,Associacao_Correspondencia,Lacuna_Completar,Ordenacao_Seriacao,Interpretacao'],
-            'statement' => ['required','string', 'max:2048'],
+            'statement' => ['required','string', 'max:4096'],
             'alternative_1' => ['required','string', 'max:512'],
             'expl_alt_1' => ['required','string', 'max:512'],
             'alternative_2' => ['required','string', 'max:512'],
@@ -416,7 +418,7 @@ class TesauroController extends Controller
                 Rule::unique('terms', 'term')->where('id_niche', $id_niche),
             ],
             'question_type' => ['required','string', 'in:Resposta_Unica,Resposta_Multipla,Afirmacao_Incompleta,Foco_Negativo,Assercao_Razao,Associacao_Correspondencia,Lacuna_Completar,Ordenacao_Seriacao,Interpretacao'],
-            'statement' => ['required','string', 'max:2048'],
+            'statement' => ['required','string', 'max:4096'],
             'alternative_1' => ['required','string', 'max:512'],
             'expl_alt_1' => ['required','string', 'max:512'],
             'alternative_2' => ['required','string', 'max:512'],
@@ -547,7 +549,7 @@ class TesauroController extends Controller
 
         $validated = $validator->validated();
         $validated['lotteryNumbers'] = array_map('intval', $validated['lotteryNumbers']);
-        $r4 = static fn ($value): float => (float) number_format(round((float) $value, 4, PHP_ROUND_HALF_UP), 4);
+        $r4 = static fn ($value): string => number_format(round((float) $value, 4, PHP_ROUND_HALF_UP), 4, '.', '');
 
         // O termo da tabela terms vem do nextTermName enviado pelo form.
         $validated['term'] = $validated['nextTermName'];
@@ -559,11 +561,11 @@ class TesauroController extends Controller
             'lotteryNumbers' => $validated['lotteryNumbers'] ?? [],
             'concourseCEFNumber' => $validated['concourseCEFNumber'] ?? '',
             'concourseCEFDate' => $validated['concourseCEFDate'] ?? '',
-            'totalRateio' => $validated['totalRateio'] ?? 0,
-            'totalPrize' => $validated['totalPrize'] ?? 0,
-            'availableBalance_Next' => $validated['availableBalance_Next'] ?? 0,
-            'availableBalance_Final5' => $validated['availableBalance_Final5'] ?? 0,
-            'availableBalance_Special' => $validated['availableBalance_Special'] ?? 0,
+            'totalRateio' => $r4($validated['totalRateio'] ?? 0),
+            'totalPrize' => $r4($validated['totalPrize'] ?? 0),
+            'availableBalance_Next' => $r4($validated['availableBalance_Next'] ?? 0),
+            'availableBalance_Final5' => $r4($validated['availableBalance_Final5'] ?? 0),
+            'availableBalance_Special' => $r4($validated['availableBalance_Special'] ?? 0),
             'participants' => [], // aqui você pode adicionar uma lógica para incluir os participantes do rateio, se necessário
         ];
 
@@ -578,9 +580,8 @@ class TesauroController extends Controller
                 // Lógica para passar todo o valor das manutenções para crédito
                 // admin_1@idoa.com.br, admin_2@idoa.com.br...
                 ${"creditsForNiche{$id_niche}"} = $r4(${"creditsForNiche{$id_niche}"} + $maintenance);
-                $totalDebts = $r4($profile['totalDebts'] ?? 0);
-                // $totalCredits = (float) ($profile['totalCredits'] ?? 0);
-                $availableBalance = $r4($profile['availableBalance'] ?? 0);
+                $totalDebts = $profile['totalDebts'] ?? 0;
+                $availableBalance = $profile['availableBalance'] ?? 0;
                 $profile['maintenance'] = $r4($maintenance);
                 $profile['totalDebts'] = $r4($totalDebts + $maintenance);
                 $profile['availableBalance'] = $r4($availableBalance - $maintenance);
@@ -593,11 +594,13 @@ class TesauroController extends Controller
             $nicheUserEmail = "niche_{$id_niche}@idoa.com.br";
             $nicheUser = \App\Models\User::where('email', $nicheUserEmail)->first();
             if ($nicheUser) {
-                $nicheUserDataFlex = \App\Models\UsersDataFlex::where('user_id', $nicheUser->id)->first();
+                $nicheUserDataFlex = \App\Models\UsersDataFlex::where('user_id', $nicheUser->id)
+                    ->where('niche_id', $id_niche)
+                    ->first();
                 if ($nicheUserDataFlex) {
                     $nicheProfile = is_array($nicheUserDataFlex->user_profile) ? $nicheUserDataFlex->user_profile : [];
-                    $totalCredits = $r4($nicheProfile['totalCredits'] ?? 0);
-                    $availableBalanceNiche = $r4($nicheProfile['availableBalance'] ?? 0);
+                    $totalCredits = $nicheProfile['totalCredits'] ?? 0;
+                    $availableBalanceNiche = $nicheProfile['availableBalance'] ?? 0;
                     $nicheProfile['totalCredits'] = $r4($totalCredits + ${"creditsForNiche{$id_niche}"});
                     $nicheProfile['availableBalance'] = $r4($availableBalanceNiche + ${"creditsForNiche{$id_niche}"});
                     $nicheUserDataFlex->user_profile = $nicheProfile;
@@ -615,7 +618,7 @@ class TesauroController extends Controller
                 $rateioData['participants'][] = [
                     'user_id' => $usersDataFlex->user_id,
                     'lotteryNumbersUser' => $lotteryNumbersUser,
-                    'contribution' => 1,
+                    'contribution' => $r4(1),
                 ];
              }
         }
@@ -677,7 +680,9 @@ class TesauroController extends Controller
         $users1hits = [];
         $numeroSorteados = $term->term_data['rateios'][0]['lotteryNumbers'] ?? [];
         foreach ($term->term_data['rateios'][0]['participants'] ?? [] as $index => $participant) {
-            $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $participant['user_id'])->first();            
+            $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $participant['user_id'])
+                ->where('niche_id', $id_niche)
+                ->first();            
             if ($usersDataFlex) {
                 $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                 $lotteryNumbersUser = $participant['lotteryNumbersUser'] ?? ($profile['lotteryNumbers'] ?? []);
@@ -693,8 +698,8 @@ class TesauroController extends Controller
                 } elseif ($acertos == 1) {
                     $users1hits[] = $participant['user_id'];
                 }
-                $availableBalance = $r4($profile['availableBalance'] ?? 0);
-                $contribution = $r4($participant['contribution'] ?? 0);
+                $availableBalance = $profile['availableBalance'] ?? 0;
+                $contribution = $participant['contribution'] ?? 0;
                 $profile['availableBalance'] = $r4($availableBalance - $contribution);
                 $profile['totalDebts'] = $r4(($profile['totalDebts'] ?? 0) + $contribution);
                 $usersDataFlex->user_profile = $profile;
@@ -793,7 +798,7 @@ class TesauroController extends Controller
                 //distribuir o prêmio para cada ganhador de 5 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
                 $valueUser5hits = $r4($value5hits / $hits5Count);
                 foreach ($users5hits as $userId) {
-                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->where('niche_id', $id_niche)->first();
                     if ($usersDataFlex) {
                         $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = $r4($profile['availableBalance'] ?? 0);
@@ -812,7 +817,7 @@ class TesauroController extends Controller
                 //distribuir o prêmio para cada ganhador de 4 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
                 $valueUser4hits = $r4($value4hits / $hits4Count);
                 foreach ($users4hits as $userId) {
-                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->where('niche_id', $id_niche)->first();
                     if ($usersDataFlex) {
                         $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = $r4($profile['availableBalance'] ?? 0);
@@ -831,7 +836,7 @@ class TesauroController extends Controller
                 //distribuir o prêmio para cada ganhador de 3 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
                  $valueUser3hits = $r4($value3hits / $hits3Count);
                 foreach ($users3hits as $userId) {
-                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->where('niche_id', $id_niche)->first();
                     if ($usersDataFlex) {
                         $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = $r4($profile['availableBalance'] ?? 0);
@@ -850,7 +855,7 @@ class TesauroController extends Controller
                 //distribuir o prêmio para cada ganhador de 2 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
                 $valueUser2hits = $r4($value2hits / $hits2Count);
                 foreach ($users2hits as $userId) {
-                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->where('niche_id', $id_niche)->first();
                     if ($usersDataFlex) {
                         $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = $r4($profile['availableBalance'] ?? 0);
@@ -869,7 +874,7 @@ class TesauroController extends Controller
                 //distribuir o prêmio para cada ganhador de 1 acerto, atualizando o availableBalance e totalcredits de cada participante do rateio com o valor do prêmio recebido.
                 $valueUser1hits = $r4($value1hits / $hits1Count);
                 foreach ($users1hits as $userId) {
-                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->where('niche_id', $id_niche)->first();
                     if ($usersDataFlex) {
                         $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = $r4($profile['availableBalance'] ?? 0);
@@ -920,7 +925,7 @@ class TesauroController extends Controller
                 //distribuir o prêmio para cada ganhador de 5 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
                 $valueUser5hits = $r4($value5hits / $hits5Count);
                 foreach ($users5hits as $userId) {  
-                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->where('niche_id', $id_niche)->first();
                     if ($usersDataFlex) {
                         $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = $r4($profile['availableBalance'] ?? 0);
@@ -938,7 +943,7 @@ class TesauroController extends Controller
                 //distribuir o prêmio para cada ganhador de 4 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
                 $valueUser4hits = $r4($value4hits / $hits4Count);
                 foreach ($users4hits as $userId) {
-                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->where('niche_id', $id_niche)->first();
                     if ($usersDataFlex) {
                         $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = $r4($profile['availableBalance'] ?? 0);
@@ -956,7 +961,7 @@ class TesauroController extends Controller
                 //distribuir o prêmio para cada ganhador de 3 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
                  $valueUser3hits = $r4($value3hits / $hits3Count);
                 foreach ($users3hits as $userId) {
-                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->where('niche_id', $id_niche)->first();
                     if ($usersDataFlex) {
                         $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = $r4($profile['availableBalance'] ?? 0);
@@ -974,7 +979,7 @@ class TesauroController extends Controller
                 //distribuir o prêmio para cada ganhador de 2 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
                 $valueUser2hits = $r4($value2hits / $hits2Count);
                 foreach ($users2hits as $userId) {
-                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->where('niche_id', $id_niche)->first();
                     if ($usersDataFlex) {
                         $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = $r4($profile['availableBalance'] ?? 0);
@@ -992,7 +997,7 @@ class TesauroController extends Controller
                 //distribuir o prêmio para cada ganhador de 1 acerto, atualizando o availableBalance e totalcredits de cada participante do rateio com o valor do prêmio recebido.
                 $valueUser1hits = $r4($value1hits / $hits1Count);
                 foreach ($users1hits as $userId) {
-                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->where('niche_id', $id_niche)->first();
                     if ($usersDataFlex) {
                         $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = $r4($profile['availableBalance'] ?? 0);
@@ -1042,7 +1047,7 @@ class TesauroController extends Controller
                 //distribuir o prêmio para cada ganhador de 5 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
                 $valueUser5hits = $r4($value5hits / $hits5Count);
                 foreach ($users5hits as $userId) {  
-                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->where('niche_id', $id_niche)->first();
                     if ($usersDataFlex) {
                         $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = $r4($profile['availableBalance'] ?? 0);
@@ -1060,7 +1065,7 @@ class TesauroController extends Controller
                 //distribuir o prêmio para cada ganhador de 4 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
                 $valueUser4hits = $r4($value4hits / $hits4Count);
                 foreach ($users4hits as $userId) {
-                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->where('niche_id', $id_niche)->first();
                     if ($usersDataFlex) {
                         $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = $r4($profile['availableBalance'] ?? 0);
@@ -1078,7 +1083,7 @@ class TesauroController extends Controller
                 //distribuir o prêmio para cada ganhador de 3 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
                  $valueUser3hits = $r4($value3hits / $hits3Count);
                 foreach ($users3hits as $userId) {
-                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->where('niche_id', $id_niche)->first();
                     if ($usersDataFlex) {
                         $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = $r4($profile['availableBalance'] ?? 0);
@@ -1096,7 +1101,7 @@ class TesauroController extends Controller
                 //distribuir o prêmio para cada ganhador de 2 acertos, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
                 $valueUser2hits = $r4($value2hits / $hits2Count);
                 foreach ($users2hits as $userId) {
-                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->where('niche_id', $id_niche)->first();
                     if ($usersDataFlex) {
                         $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = $r4($profile['availableBalance'] ?? 0);
@@ -1114,7 +1119,7 @@ class TesauroController extends Controller
                 //distribuir o prêmio para cada ganhador de 1 acerto, atualizando o availableBalance e totalcreds de cada participante do rateio com o valor do prêmio recebido.
                 $valueUser1hits = $r4($value1hits / $hits1Count);
                 foreach ($users1hits as $userId) {
-                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->first();
+                    $usersDataFlex = \App\Models\UsersDataFlex::where('user_id', $userId)->where('niche_id', $id_niche)->first();
                     if ($usersDataFlex) {
                         $profile = is_array($usersDataFlex->user_profile) ? $usersDataFlex->user_profile : [];
                         $availableBalance = $r4($profile['availableBalance'] ?? 0);

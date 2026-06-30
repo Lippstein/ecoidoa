@@ -634,11 +634,11 @@
                                         </div>
                                         <div class="row g-2">
                                             <div class="col-md-3"><strong>Acumulado Próximo Rateio Final 5:</strong></div>
-                                            <div class="col-md-3">{{ $formatMoneyRateio(($availableBalanceNext ?? 0) + ($availableBalanceFinal5 ?? 0)) }}</div>
+                                            <div class="col-md-3">{{ $formatMoneyRateio(($availableBalanceFinal5 ?? 0)) }}</div>
                                         </div>
                                         <div class="row g-2">
                                             <div class="col-md-3"><strong>Acumulado Próximo Rateio Especial:</strong></div>
-                                            <div class="col-md-3">{{ $formatMoneyRateio(($availableBalanceNext ?? 0)+($availableBalanceSpecial ?? 0)) }}</div>
+                                            <div class="col-md-3">{{ $formatMoneyRateio(($availableBalanceSpecial ?? 0)) }}</div>
                                         </div>
                                     </div>
                                     @break {{-- Para mostrar apenas o rateio mais recente por termo, descomente este break --}}

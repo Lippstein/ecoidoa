@@ -66,9 +66,13 @@
             </div>
         </div>
     </div>
+    @php
+        $termoNT = \App\Models\Relation::where('id_term_nt', $term->id ?? '')->first();
+        $termoBT = \App\Models\Term::where('id', $termoNT->id_term_bt ?? '')->first();
+    @endphp
     <div class="container">
         <div class="py-2 mb-4 rounded">
-            <h4 class="text-center">Editar/Ver Questão do Termo</h4>
+            <h4 class="text-center">Editar/Ver Questão do Termo<br>{{ $termoBT->term ?? '' }}</h4>
         </div>
         <div class="d-flex justify-content-end gap-2 mb-3">
             <a href="{{ route('tesauro_list.show', ['niche_filter' => $niche_filter, 'bt_filter' => $bt_filter]) }}"

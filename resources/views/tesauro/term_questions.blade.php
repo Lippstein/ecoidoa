@@ -68,7 +68,7 @@
     </div>
     <div class="container">
         <div class="py-2 mb-4 rounded">
-            <h4 class="text-center">Editar Questões do Termo </h4>
+            <h4 class="text-center">Inserir Questões do Termo<br>{{ $term->term }} </h4>
         </div>
         <div class="d-flex justify-content-end gap-2 mb-3">
             <a href="{{ route('tesauro_list.show', ['niche_filter' => $niche_filter, 'bt_filter' => $bt_filter]) }}"
@@ -115,7 +115,7 @@
             <div class="card-header">
                 Questões do termo: <strong>{{ $idTermo }} - {{ $term->term }}</strong>
             </div>
-            <div class="card-body p-0">
+            <div class="card-body p-2">
                 <div class="table-responsive">
                     <table class="table table-sm table-striped mb-0">
                         <thead>
@@ -146,6 +146,10 @@
                                     $questionType =
                                         data_get($questionTerm->term_data, 'question_type') ??
                                         (data_get($questionTerm->term_data, 'questions.0.question_type') ?? '-');
+                                    $questionStatement =
+                                        data_get($questionTerm->term_data, 'questions.0.statement') ??
+                                        data_get($questionTerm->term_data, 'statement');
+
                                 @endphp
                                 <tr>
                                     <td>{{ $questionTerm->id }}</td>
@@ -153,6 +157,13 @@
                                     <td>{{ $questionType }}</td>
                                     <td>{!! $linkQuestionShow !!}</td>
                                     <td>{!! $linkQuestionEdit !!}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="p-0">
+                                        {{-- <div class="p-2 bg-light"> --}}
+                                            <small>Enunciado: {!! substr($questionStatement, 0, 150) . '...' !!}</small>
+                                        {{-- </div> --}}
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>

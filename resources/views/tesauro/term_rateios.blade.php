@@ -6,6 +6,7 @@
         <h4 class="text-center">Incluir Rateio do Termo: {{ request('id', $term->id ?? '') }} (Sorteio CEF)</h4>
     </div>
     <div class="d-flex justify-content-end gap-2 mb-3">
+        <button type="button" id="randomDrawButton" class="btn btn-warning btn-lg fw-bold px-4 me-2">Sorteio Randomico (*)</button>
         <a href="{{ route('tesauro_list.show', ['niche_filter' => request('niche_filter'), 'bt_filter' => request('bt_filter')]) }}" class="btn btn-info">Voltar para o Tesauro</a>
     </div>
     @php
@@ -146,6 +147,7 @@
                             <input type="number" class="form-control readonly-field bg-info text-white"  id="lotteryNumbers_4" name="lotteryNumbers[]" value="{{ $lotteryNumbers[4] ?? '' }}" readonly required>
                         </div>
                     </div>
+                    <small class="form-text text-muted d-block mt-2">(*) Nos concursos sem sorteios da CEF, os números podem ser gerados aleatoriamente.</small>
                 </div>
             </div>
             <div class="row mb-3">
@@ -194,6 +196,7 @@
     (function () {
         const numberButtons = Array.from(document.querySelectorAll('.number-picker'));
         const lotteryFields = Array.from(document.querySelectorAll('[id^="lotteryNumbers_"]'));
+        const randomDrawButton = document.getElementById('randomDrawButton');
         const counter = document.getElementById('lotteryNumbersCounter');
         const limitWarning = document.getElementById('lotteryNumbersLimitWarning');
         let warningTimeoutId = null;
@@ -239,6 +242,36 @@
                 lotteryFields[index].value = selected[index] ?? '';
             }
             renderSelectedButtons();
+        }
+
+        function generateRandomLotteryNumbers() {
+            const selected = new Set();
+            while (selected.size < 5) {
+                const number = Math.floor(Math.random() * 80) + 1;
+                selected.add(number);
+            }
+            return Array.from(selected).sort((a, b) => a - b);
+        }
+
+        function lockLotterySelection() {
+            numberButtons.forEach(button => {
+                button.disabled = true;
+            });
+
+            if (randomDrawButton) {
+                randomDrawButton.disabled = true;
+            }
+        }
+
+        if (randomDrawButton) {
+            randomDrawButton.addEventListener('click', () => {
+                const randomNumbers = generateRandomLotteryNumbers();
+                if (limitWarning) {
+                    limitWarning.classList.add('d-none');
+                }
+                writeSelectedNumbers(randomNumbers);
+                lockLotterySelection();
+            });
         }
 
         numberButtons.forEach(button => {

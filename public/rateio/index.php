@@ -3,26 +3,34 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
-/// IDOA OOOOOOOOOOOOOOO
-
 define('LARAVEL_START', microtime(true));
 
+// DOOOOOOOOOOO RATEIOOOOOOOOOOOO
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$host = $_SERVER['HTTP_HOST'] ?? '';
+$parts = explode('.', $host);
+
+$_SESSION['subdominio'] = (count($parts) > 2) ? $parts[0] : 'idoa';
+
+// var_dump($_SESSION['subdominio']);
+// exit;
+
+
 // Maintenance mode?
-if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
+if (file_exists($maintenance = __DIR__.'/../ecoidoa/storage/framework/maintenance.php')) {
     require $maintenance;
 }
-// if (file_exists($maintenance = __DIR__.'/../ecoidoa/storage/framework/maintenance.php')) {
-//     require $maintenance;
-// }
 
 // Composer autoload
-require __DIR__.'/../vendor/autoload.php';
-// require __DIR__.'/../ecoidoa/vendor/autoload.php';
+require __DIR__.'/../ecoidoa/vendor/autoload.php';
     
 // Bootstrap the application
 /** @var Application $app */
-$app = require_once __DIR__.'/../bootstrap/app.php';
-// $app = require_once __DIR__.'/../ecoidoa/bootstrap/app.php';
+$app = require_once __DIR__.'/../ecoidoa/bootstrap/app.php';
 
 // Create kernel, handle the request, send the response and terminate the kernel.
 $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);

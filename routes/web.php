@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -13,6 +14,28 @@ use App\Http\Controllers\Niches\NicheController;
 use App\Http\Controllers\Terms\TesauroController;
 use App\Models\Habitat;
 use App\Http\Controllers\PdfController;
+
+
+$renderSubdomainView = function (string $subdominio) {
+    $viewName = $subdominio . '.show'; // ex: darcyvargas.show
+
+    if (!View::exists($viewName)) {
+        abort(404, 'View nao encontrada para este subdominio.');
+    }
+
+    return view($viewName, [
+        'subdominio' => $subdominio,
+    ]);
+};
+
+Route::domain('{subdominio}.idoa.com.br')->group(function () use ($renderSubdomainView) {
+    Route::get('/', $renderSubdomainView)->name('subdomain.show');
+});
+
+// Suporte para teste local com hosts apontando para *.localhost
+Route::domain('{subdominio}.localhost')->group(function () use ($renderSubdomainView) {
+    Route::get('/', $renderSubdomainView);
+});
 
 
 // Formulário de login
@@ -43,6 +66,10 @@ Route::get('/welcome', function () {
     $habitats = \App\Models\Habitat::select('id','habitat','habitat_data')->get();
     return view('welcome', compact('habitats')); // ou qualquer view que desejar
 })->name('welcome');
+
+Route::view('/nead', 'nead.index')->name('nead.show');
+Route::view('/rateio', 'rateio.index')->name('rateio.show');
+Route::view('/darcyvargas', 'darcyvargas.index')->name('darcyvargas.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Rota de dashboard protegida
@@ -119,6 +146,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Route::get('/usersDataFlex/indebtedUsers/{udf_id}', [UsersDataFlexController::class, 'showIndebtedUsersForm'])->name('usersDataFlex_indebtedUsers.show');
     // Route::get('/usersDataFlex/creditorUsers/{udf_id}', [UsersDataFlexController::class, 'showCreditorUsersForm'])->name('usersDataFlex_creditorUsers.show');
     // Route::get('/usersDataFlex/results/{udf_id}', [UsersDataFlexController::class, 'showResultsForm'])->name('usersDataFlex_results.show');
-
-    // https://youtu.be/dpJDV25tptw?si=vyALHH9RrJtRslRD
 });

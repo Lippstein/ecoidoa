@@ -44,7 +44,8 @@
                 <ul>
                     @php
                         $docs = $term->term_data['documents'] ?? []; // pega o array ou vazio
-                        $dir = request('niche_filter') . '/docs'; // Usar o diretório conforme o nicho
+                        $dir = 'niche_' . request('niche_filter'); // Usar o diretório conforme o nicho
+                        // $dir = request('niche_filter') . '/docs'; // Usar o diretório conforme o nicho
                     @endphp
                     @if (empty($docs))
                         <li>Nenhum documento incluído.</li>
