@@ -134,7 +134,7 @@ class UsersDataFlexController extends Controller
      */
     public function updateUsersDataFlexForm(Request $request, $id)
     {
-        if (now('America/Sao_Paulo')->hour > 19 || now('America/Sao_Paulo')->hour < 22) {
+        if (now('America/Sao_Paulo')->hour > 19 && now('America/Sao_Paulo')->hour < 22) {
             return redirect()->back()
                 ->with('status', 'O sistema de atualização de perfil NÃO está disponível entre 19h e 22h.');
         }
@@ -143,6 +143,7 @@ class UsersDataFlexController extends Controller
         $idNiche = $userDataFlex->niche_id;
         if($idNiche == 1) {
             $validated = $request->validate([
+                    'nicheLevel' => 'nullable|integer|min:0|max:9',
                     'certificationEFSI' => 'required|string|max:150',
                     'conclusionCertificationEFSI' => ['nullable', 'string', 'regex:/^(?:19\d{2}|20\d{2}|Cursando)$/'],
                     'ak1EFSIName' => 'required|string|max:150',
@@ -238,9 +239,16 @@ class UsersDataFlexController extends Controller
 
         $updatedProfile = $currentProfile;
         foreach ($validated as $key => $value) {
+            if ($key === 'nicheLevel') {
+                continue;
+            }
             if (!array_key_exists($key, $updatedProfile) || $updatedProfile[$key] !== $value) {
                 $updatedProfile[$key] = $value;
             }
+        }
+
+        if ($request->filled('nicheLevel')) {
+            $userDataFlex->niche_level = (int) $request->input('nicheLevel');
         }
 
         $userDataFlex->user_profile = $updatedProfile;

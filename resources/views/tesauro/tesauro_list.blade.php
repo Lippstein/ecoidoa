@@ -18,7 +18,6 @@
             @php
                 $tabNiches = \App\Models\Niche::where('id', $niche_filter)->first(); 
                 $tabHabitats = \App\Models\Habitat::where('id', $tabNiches->habitat_id)->first();
-
                 $tabRelations = \App\Models\Relation::where('id_niche', $niche_filter)->get();
 
                 $nameDoBT = $tabHabitats->habitat;
@@ -80,15 +79,6 @@
                     exit;
                 }
 
-
-
-                //                             // dd($idTermBT, $idTermNT);
-                // $redirectUrl = route('term_create.show', [
-                //     'niche_filter' => $niche_filter ?? '0',
-                //     'bt_filter' => $bt_filter ?? '0',
-                //     'id_term_bt' => $id_term_bt ?? '0',
-                //     'id_term_nt' => $id_term_nt ?? '0',
-                // ]);
             @endphp
             {{-- <script> --}}
                 // garante escape seguro para JS
@@ -207,8 +197,17 @@
                 </form>
 
                 @php
+                // $nicheLevel para verificar se o usuário tem permissão para alterar o tesauro
+                    $nicheLevel = 0;
+                    $tabUsersDataFlex = \App\Models\UsersDataFlex::where('niche_level', (int) $niche_filter)
+                        ->where('user_id', (int) auth()->id())
+                        ->first();
+                    if ($tabUsersDataFlex) {
+                        $nicheLevel = $tabUsersDataFlex->niche_level ?? 0;
+                    }
+                    // dd($tabUsersDataFlex, $nicheLevel);
                     // Função recursiva para listar a árvore
-                    function listarTermosRecursivos($id_termo_bt, $children, $termsNames, $niche_filter, $bt_filter, $nivel = 0) {
+                    function listarTermosRecursivos($id_termo_bt, $children, $termsNames, $niche_filter, $bt_filter, $nivel = 0, $nicheLevel) {
                         if (!isset($children[$id_termo_bt])) return;
                         foreach ($children[$id_termo_bt] as $filho) {
                             $name = isset($termsNames[$filho['id_term_nt']]) ? $termsNames[$filho['id_term_nt']]->term : "(termo não encontrado gggggggg)";
@@ -216,53 +215,69 @@
                             $termOrder = $filho['term_order'];
                             $id_termo_nt = $filho['id_term_nt'];
                             $nextOrder = nextTermOrder($id_termo_nt, $children, $termOrder);
-                            $editUrl = route('term_edit.show', [
-                                'niche_filter' => $niche_filter, 
-                                   'bt_filter' => $bt_filter, 
-                                          'id' => $filho['id_term_nt']
+                            if ($nicheLevel > 0) {
+                                $editUrl = route('term_edit.show', [
+                                    'niche_filter' => $niche_filter, 
+                                    'bt_filter' => $bt_filter, 
+                                            'id' => $filho['id_term_nt']
+                                    ]);
+                                $docsUrl = route('term_docs.show', [
+                                    'niche_filter' => $niche_filter, 
+                                    'bt_filter' => $bt_filter, 
+                                            'id' => $filho['id_term_nt']
+                                    ]);
+                                $insTermUrl = route('term_create.show', [
+                                    'niche_filter' => $niche_filter, 
+                                    'id_term_bt' => $filho['id_term_nt'], 
+                                    'name_term_bt' => $name, 
+                                    'term_order' => $nextOrder, 
+                                    'bt_filter' => $bt_filter
+                                    ]);
+                                $insNTUrl = route('term_creatent.show', [
+                                    'niche_filter' => $niche_filter, 
+                                    'bt_filter' => $bt_filter, 
+                                    'id_term_bt' => $filho['id_term_nt'], 
+                                    'name_term_bt' => $name, 
+                                    'term_order' => $nextOrder
+                                    ]);
+                                $questionsUrl = route('term_questions.create', [
+                                    'niche_filter' => $niche_filter, 
+                                    'bt_filter' => $bt_filter, 
+                                            'id' => $filho['id_term_nt'],
+                                    'term_order' => $nextOrder
+                                    ]);
+                                $rateiosUrl = route('term_rateios.create', [
+                                    'niche_filter' => $niche_filter, 
+                                    'bt_filter' => $bt_filter, 
+                                            'id' => $filho['id_term_nt'],
+                                    'term_order' => $nextOrder
+                                    ]);
+                                $nameBT = isset($termsNames[$id_termo_bt]) ? $termsNames[$id_termo_bt]->term : "(termo não encontrado hhhhh)";
+                                $delNTUrl = route('delete_relation.show', [
+                                    'niche_filter' => $niche_filter, 
+                                    'bt_filter' => $bt_filter, 
+                                    'id_term_bt' => $id_termo_bt, 
+                                    'name_term_bt' => $nameBT, 
+                                    'id_term_nt' => $id_termo_nt, 
+                                    'name_term_nt' => $name
+                                    ]);
+                                $ordenarUrl = route('tesauro.children', [
+                                    'id_term_bt' => $id_termo_nt,
+                                    'id_niche' => $niche_filter,
+                                    'niche_filter' => $niche_filter,
+                                    'bt_filter' => $bt_filter
                                 ]);
-                            $docsUrl = route('term_docs.show', [
-                                'niche_filter' => $niche_filter, 
-                                   'bt_filter' => $bt_filter, 
-                                          'id' => $filho['id_term_nt']
-                                ]);
-                            $insTermUrl = route('term_create.show', [
-                                'niche_filter' => $niche_filter, 
-                                  'id_term_bt' => $filho['id_term_nt'], 
-                                'name_term_bt' => $name, 
-                                  'term_order' => $nextOrder, 
-                                   'bt_filter' => $bt_filter
-                                ]);
-                            $insNTUrl = route('term_creatent.show', [
-                                'niche_filter' => $niche_filter, 
-                                   'bt_filter' => $bt_filter, 
-                                  'id_term_bt' => $filho['id_term_nt'], 
-                                'name_term_bt' => $name, 
-                                  'term_order' => $nextOrder
-                                ]);
-                            $questionsUrl = route('term_questions.create', [
-                                'niche_filter' => $niche_filter, 
-                                   'bt_filter' => $bt_filter, 
-                                          'id' => $filho['id_term_nt'],
-                                  'term_order' => $nextOrder
-                                ]);
-                            $rateiosUrl = route('term_rateios.create', [
-                                'niche_filter' => $niche_filter, 
-                                   'bt_filter' => $bt_filter, 
-                                          'id' => $filho['id_term_nt'],
-                                  'term_order' => $nextOrder
-                                ]);
-
-
-                            $nameBT = isset($termsNames[$id_termo_bt]) ? $termsNames[$id_termo_bt]->term : "(termo não encontrado hhhhh)";
-                            $delNTUrl = route('delete_relation.show', [
-                                'niche_filter' => $niche_filter, 
-                                   'bt_filter' => $bt_filter, 
-                                  'id_term_bt' => $id_termo_bt, 
-                                'name_term_bt' => $nameBT, 
-                                  'id_term_nt' => $id_termo_nt, 
-                                'name_term_nt' => $name
-                                ]);
+                            } else {
+                                $editUrl = '#';
+                                $docsUrl = '#';
+                                $insTermUrl = '#';
+                                $insNTUrl = '#';
+                                $questionsUrl = '#';
+                                $rateiosUrl = '#';
+                                $delNTUrl = '#';
+                                $ordenarUrl = '#';
+                            }
+                            // dd($nicheLevel, $editUrl);
                             echo '<div class="accordion-item">';
                             echo '    <h2 class="accordion-header">';
                             echo '        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-'.$id_termo_bt.$filho['id_term_nt'].'" aria-expanded="false" aria-controls="flush-'.$id_termo_bt.$filho['id_term_nt'].'">';
@@ -276,7 +291,7 @@
                             echo '            <a href="' . $insTermUrl . '" class="link-opacity-75-hover">Novo</a>';
                             echo '            <a href="' . $insNTUrl . '" class="link-opacity-75-hover">Incluir (NT)</a>';
                             echo '            <a href="' . $delNTUrl . '" class="link-opacity-75-hover">Excluir (NT)</a>';
-                            echo '            <a href="' . route('tesauro.children', ['id_term_bt' => $id_termo_nt, 'id_niche' => $niche_filter, 'niche_filter' => $niche_filter, 'bt_filter' => $bt_filter]) . '" class="link-opacity-75-hover">Ordenar</a>';
+                            echo '            <a href="' . $ordenarUrl . '" class="link-opacity-75-hover">Ordenar</a>';
                             if ($niche_filter == 1 || $niche_filter == 2) {
                                 echo '            <a href="' . $questionsUrl . '" class="link-opacity-75-hover">Questões</a>';
                             } elseif ($niche_filter == 3 || $niche_filter == 4) {
@@ -286,7 +301,7 @@
                             echo '        </div>';
                             echo '    </div>';
                             echo '</div>';
-                            listarTermosRecursivos($filho['id_term_nt'], $children, $termsNames, $niche_filter, $bt_filter, $nivel+1);
+                            listarTermosRecursivos($filho['id_term_nt'], $children, $termsNames, $niche_filter, $bt_filter, $nivel+1, $nicheLevel);
                         }
                     }
 
@@ -297,7 +312,7 @@
                             $primeiroTermoBt = $bt_filter;
                         }
                         if ($primeiroTermoBt !== null) {
-                            listarTermosRecursivos($primeiroTermoBt, $children, $termsNames, $niche_filter, $bt_filter, 1);
+                            listarTermosRecursivos($primeiroTermoBt, $children, $termsNames, $niche_filter, $bt_filter, 1, $nicheLevel);
                         } else {
                             echo 'Nenhum termo encontrado.';
                         }

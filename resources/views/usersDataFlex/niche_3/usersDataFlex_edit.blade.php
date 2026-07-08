@@ -18,7 +18,7 @@
         </div>
         <div class="row mb-2">
             <div>
-              Perfil (ID): <strong> {{ $userDataFlex->id }} </strong> - Habitat_ID: <strong> {{ $userDataFlex->habitat_id }} </strong> - Niche_ID: <strong> {{ $userDataFlex->niche_id }} </strong>
+              Perfil (ID): <strong> {{ $userDataFlex->id }} </strong> - Habitat_ID: <strong> {{ $userDataFlex->habitat_id }} </strong> - Niche_ID: <strong> {{ $userDataFlex->niche_id }} </strong> - Niche_Level: <strong> {{ $userDataFlex->niche_level }} </strong>
             </div>        
             <div>
                 Nome do Usuário: <strong>{{ $user->name }}</strong> - User_ID: <strong> {{ $userDataFlex->user_id }} </strong>
@@ -33,6 +33,7 @@
             @csrf
             @method('PUT')
             @php
+                $nicheLevel = $userDataFlex->niche_level;
                 $data = $userDataFlex->user_profile;
                 if (is_string($data)) {
                     try { $data = json_decode($data, true); } catch (\Throwable $e) { $data = []; }
@@ -55,6 +56,7 @@
                 $results = isset($data['results']) ? $data['results'] : 'Resultados não cadastrados';
                 $maintenance = isset($data['maintenance']) ? $data['maintenance'] : 0;
                 $invite = isset($data['invite']) ? $data['invite'] : 'Convite não gerado';
+                $nicheLevel = old('niche_level', $userDataFlex->niche_level ?? 0);
                 $lotteryNumbersUser = old('lotteryNumbersUser', $lotteryNumbersUser);
                 $lotteryNumbersUser = is_array($lotteryNumbersUser) ? $lotteryNumbersUser : array_map('trim', explode(',', (string) $lotteryNumbersUser));
                 $lotteryNumbersUser = array_values(array_slice(array_map('intval', $lotteryNumbersUser), 0, 5));
@@ -108,6 +110,13 @@
             <div class="py-2 mb-4 rounded">
                 <hr style="margin:8px 0; opacity:.3;">
             </div>
+            <div class="row mb-2">
+                <label  class="col-sm-2 col-form-label" for="nicheLevel"><strong>Nível de Nicho:</strong></label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control readonly-field bg-info text-white" id="nicheLevel" name="nicheLevel" value="{{ old('nicheLevel', $nicheLevel) }}" readonly required autofocus>
+                </div>
+            </div>
+
             <div class="row mb-2">
                 <label  class="col-sm-2 col-form-label" for="listNumbers"><strong>Escolha os Números:</strong></label>
                 <div class="col-sm-10">

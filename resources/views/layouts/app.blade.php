@@ -36,8 +36,10 @@
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" href="{{ route('users_list.show') }}">Usuários</a></li>
-                                    <li><a class="dropdown-item" href="{{ route('habitats_list.show') }}">Habitats</a></li>
-                                    <li><a class="dropdown-item" href="{{ route('niches_list.show') }}">Niches</a></li>
+                                    @if(auth()->check() and Auth::user()->level >= 9)
+                                        <li><a class="dropdown-item" href="{{ route('habitats_list.show') }}">Habitats</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('niches_list.show') }}">Niches</a></li>
+                                    @endif
                                     <li><a class="dropdown-item" href="{{ route('tesauro_list.show') }}">Tesauro</a></li>
                                 </ul>
                             </li>
@@ -45,6 +47,9 @@
                                 <a class="nav-link" href="#">Pricing</a>
                             </li>
                         @endif
+
+
+                        
                     </ul>
                     <ul class="navbar-nav ms-auto align-items-center padding-1">
                         @if(auth()->check())

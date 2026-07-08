@@ -11,6 +11,7 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained('users')->onUpdate('no action')->onDelete('no action');
             $table->foreignId('habitat_id')->constrained('habitats')->onUpdate('no action')->onDelete('no action');
             $table->foreignId('niche_id')->constrained('niches')->onUpdate('no action')->onDelete('no action');
+            $table->integer('niche_level')->default(0);
             $table->json('user_profile')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

@@ -25,6 +25,11 @@
             padding-bottom: 4px;
         }
 
+        .statement-editor .ql-editor img {
+            max-width: 100%;
+            height: auto;
+        }
+
         /* Garante que o tooltip não vaze sobre campos abaixo */
         .statement-editor .ql-tooltip {
             z-index: 100;
@@ -2021,13 +2026,46 @@
                                 [{
                                     align: []
                                 }],
-                                ['link', 'blockquote', 'code-block'],
+                                ['link', 'image', 'blockquote', 'code-block'],
                                 [{
                                     'custom-formula': 'formula'
                                 }],
                                 ['clean']
                             ],
                             handlers: {
+                                'link': function(value) {
+                                    if (!value) {
+                                        this.quill.format('link', false, 'user');
+                                        return;
+                                    }
+
+                                    const linkUrl = window.prompt('Informe a URL do link:');
+                                    if (!linkUrl) {
+                                        return;
+                                    }
+
+                                    const range = this.quill.getSelection(true);
+                                    if (range && range.length > 0) {
+                                        this.quill.formatText(range.index, range.length, 'link', linkUrl, 'user');
+                                        this.quill.setSelection(range.index + range.length, 0, 'user');
+                                    } else {
+                                        const index = range ? range.index : this.quill.getLength();
+                                        this.quill.insertText(index, linkUrl, 'link', linkUrl, 'user');
+                                        this.quill.setSelection(index + linkUrl.length, 0, 'user');
+                                    }
+                                },
+                                'image': function() {
+                                    const imageUrl = window.prompt('Informe a URL da imagem:');
+                                    if (!imageUrl) {
+                                        return;
+                                    }
+
+                                    const range = this.quill.getSelection(true);
+                                    const index = range ? range.index : this.quill.getLength();
+
+                                    this.quill.insertEmbed(index, 'image', imageUrl, 'user');
+                                    this.quill.setSelection(index + 1, 0, 'user');
+                                },
                                 'custom-formula': function() {
                                     window._activeQuill = this.quill;
                                     document.getElementById('formulaLatexInput').value = '';

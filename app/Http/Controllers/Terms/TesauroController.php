@@ -232,7 +232,7 @@ class TesauroController extends Controller
     {
         $request->validate([
             'id' => 'required|integer|exists:terms,id',
-            'new_doc' => 'file|mimes:pdf|max:1024' // PDF, máximo 1MB
+            'new_doc' => 'file|mimes:pdf,jpg,jpeg|max:1024' // PDF/JPG, máximo 1MB
         ]);
 
         $term = \App\Models\Term::findOrFail($request->input('id'));
@@ -258,7 +258,7 @@ class TesauroController extends Controller
             // Testa se já existe o arquivo no disco public
             if (Storage::disk('public')->exists($relativePath)) {
                 return back()->withErrors([
-                    'new_doc' => 'Já existe um arquivo PDF com esse nome!'
+                    'new_doc' => 'Já existe um arquivo com esse nome!'
                 ]);
             }
 
@@ -273,7 +273,7 @@ class TesauroController extends Controller
             $termData['documents'] = $documents;
             $term->term_data = $termData;
             $term->save();
-            return back()->with('success', 'Documento PDF incluído com sucesso!');
+            return back()->with('success', 'Documento incluído com sucesso!');
         }
 
         // Exclusão
@@ -283,9 +283,10 @@ class TesauroController extends Controller
             $termData['documents'] = array_values($documents);
             $term->term_data = $termData;
             $term->save();
-            $dir = $niche_filter . '/docs';
+            $dir = 'niche_' . $niche_filter;
+            // $dir = $niche_filter . '/docs';
             Storage::disk('public')->delete("{$dir}/{$doc}");
-            return back()->with('status', 'Documento excluído com sucesso!');
+            return back()->with('success', 'Documento excluído com sucesso!');
         }
 
         return back();

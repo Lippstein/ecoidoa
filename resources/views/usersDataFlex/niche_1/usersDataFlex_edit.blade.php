@@ -13,7 +13,7 @@
         </div>
         <div class="row mb-2">
             <div>
-              Perfil (ID): <strong> {{ $userDataFlex->id }} </strong> - Habitat_ID: <strong> {{ $userDataFlex->habitat_id }} </strong> - Niche_ID: <strong> {{ $userDataFlex->niche_id }} </strong>
+              Perfil (ID): <strong> {{ $userDataFlex->id }} </strong> - Habitat_ID: <strong> {{ $userDataFlex->habitat_id }} </strong> - Niche_ID: <strong> {{ $userDataFlex->niche_id }} </strong> - Niche_Level: <strong> {{ $userDataFlex->niche_level }} </strong>
             </div>        
             <div>
                 Nome do Usuário: <strong>{{ $user->name }}</strong> - User_ID: <strong> {{ $userDataFlex->user_id }} </strong>
@@ -32,6 +32,8 @@
                 if (is_string($data)) {
                     try { $data = json_decode($data, true); } catch (\Throwable $e) { $data = []; }
                 }
+                $nicheLevel = $userDataFlex->niche_level;
+
                 $certificationEFSI = isset($data['certificationEFSI']) ? $data['certificationEFSI'] : 'Ensino Fundamental Séries Iniciais de Educação de Jovens e Adultos'; 
                 $conclusionCertificationEFSI = isset($data['conclusionCertificationEFSI']) ? $data['conclusionCertificationEFSI'] : ''; 
                 $ak1EFSIName = isset($data['ak1EFSIName']) ? $data['ak1EFSIName'] : 'LINGUAGENS E MATEMÁTICA';
@@ -85,6 +87,8 @@
                 $ak4EMAFResult = isset($data['ak4EMAFResult']) ? $data['ak4EMAFResult'] : 'Resultado AK4 não cadastrado';
                 $ak4EMAFConclusion = isset($data['ak4EMAFConclusion']) ? $data['ak4EMAFConclusion'] : 'Conclusão AK4 não cadastrada';
                 $ak4EMAFObs = isset($data['ak4EMAFObs']) ? $data['ak4EMAFObs'] : 'Observação AK4 não cadastrada';
+
+                $nicheLevel = old('niche_level', $userDataFlex->niche_level ?? 0);
 
                 $certificationEFSI = old('certificationEFSI', $data['certificationEFSI'] ?? 'Ensino Fundamental Séries Iniciais de Educação de Jovens e Adultos');
                 $conclusionCertificationEFSI = old('conclusionCertificationEFSI', $data['conclusionCertificationEFSI'] ?? '');
@@ -142,6 +146,12 @@
             @endphp
             <div class="py-2 mb-4 rounded">
                 <hr style="margin:8px 0; opacity:.3;">
+            </div>
+            <div class="row mb-2">
+                <label  class="col-sm-4 col-form-label" for="nicheLevel"><strong>Nível de Nicho:</strong></label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control readonly-field bg-info text-white" id="nicheLevel" name="nicheLevel" value="{{ old('nicheLevel', $nicheLevel) }}" readonly required autofocus>
+                </div>
             </div>
             <div class="row mb-2">
                 <label  class="col-sm-4 col-form-label" for="certificationEFSI"><strong>Certificação EFSI:</strong></label>
