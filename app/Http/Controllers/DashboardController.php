@@ -20,8 +20,11 @@ class DashboardController extends Controller
 
         $usersDataFlexList = UsersDataFlex::with(['user', 'habitat', 'niche'])
             ->where('user_id', $userId)
-            ->get();
+            ->orderBy('niche_id', 'asc')
+            ->get()
+            ->keyBy('niche_id');
         return view('dashboard', compact('usersDataFlexList'));
-    }
-    
+    }    
 }
+
+

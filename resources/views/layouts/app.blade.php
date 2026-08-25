@@ -47,8 +47,6 @@
                                 <a class="nav-link" href="#">Pricing</a>
                             </li>
                         @endif
-
-
                         
                     </ul>
                     <ul class="navbar-nav ms-auto align-items-center padding-1">
@@ -99,7 +97,7 @@
             @endif
         </div> --}}
                 @if(auth()->check() && (int) auth()->user()->level === 0)
-                    <div class="alert alert-info mt-3 mb-3" role="alert">
+                    <div class="alert alert-info mt-3 mb-3 text-center" role="alert">
                         <h5 class="mb-0">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-hand-thumbs-up" viewBox="0 0 16 16" style="margin-right: 8px;">
                                 <path d="M6.956 1.745C7.021.81 7.908.087 8.9.087c.9 0 1.823.75 1.915 1.659.02.272.092.59.213.933.876 4.502 3.082 7.602 5.857 9.06M8 16a.5.5 0 0 1-.5-.5v-5.623m0-10.058v.651.859c0 1.042-.053 2.062-.184 3.056g1.852 4.694c2.287-1.346 4.106-3.755 4.332-6.354.205-2.838-.822-4.694-2.36-5.193-.955-.868-2.333-.265-2.334 1.39Z"/>

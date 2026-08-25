@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('content')
-    @if (session('subdominio') === 'idoa')
+    {{-- @if (session('subdominio') === 'idoa') --}}
         {{-- <p>Subdomínio: {{ session('subdominio') }}</p> --}}
         <div class="container">
             <main class="flex w-full flex-col-reverse lg:max-w-4xl lg:flex-row">
@@ -52,8 +52,8 @@
                 </div>
             </main>
         </div>
-    @endif
-    @if (session('subdominio') === 'nead')
+    {{-- @endif --}}
+    {{-- @if (session('subdominio') === 'nead')
         <div class="container">
             <main class="flex w-full flex-col-reverse lg:max-w-4xl lg:flex-row">
                 <div class="row justify-content-center">
@@ -68,16 +68,16 @@
                         </h5>
                         <p class="lead mb-4">Aqui, respeitamos o seu tempo e valorizamos a sua história.<br> 
                             Transforme a sua vida e conquiste novas oportunidades profissionais através dos estudos.</p>
-                        {{-- <a href="#matricula" class="btn btn-warning btn-lg fw-bold px-4 me-2">Quero Estudar</a> --}}
-                        <a href="#sobre" class="btn btn-warning btn-lg fw-bold px-4 me-2">Conhecer a Escola</a>
+                        {{-- <a href="#mamtricula" class="btn btn-warning btn-lg fw-bold px-4 me-2">Quero Estudar</a> --}}
+                        {{-- <a href="#sobre" class="btn btn-warning btn-lg fw-bold px-4 me-2">Conhecer a Escola</a>
                     </div>
                 </div>
             </main>
         </div>
-    @endif
+    @endif --}}
 
-    @if (session('subdominio') !== 'nead' && session('subdominio') !== 'idoa')
+    {{-- @if (session('subdominio') !== 'nead' && session('subdominio') !== 'idoa')
         <p>Subdomínio não reconhecido.</p>
         <p>Subdomínio: {{ session('subdominio') }}</p>
-    @endif 
+    @endif  --}}
 @endsection

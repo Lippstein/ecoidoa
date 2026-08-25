@@ -3,13 +3,15 @@
 @section('content')
     <div class="container">
         <div class="py-2 mb-4 rounded">
-            <h4 class="text-center">Editar Perfil do Usuário</h4>
+            <h4 class="text-center">CENTRAL DE MATRÍCULA - HISTÓRICO</h4>
         </div>
+
         <div class="d-flex justify-content-end gap-2 mb-3">
-            <button type="button" class="btn btn-warning" onclick="toggleReadonly()">
+            <a href="{{ route('users_edit_neejacpdv.show', [$userDataFlex->user_id, $userDataFlex->niche_id]) }}" class="btn btn-warning btn-md fw-bold px-4 me-2">Dados do Cadastro</a>
+            <button type="button" class="btn btn-warning btn-md px-4 me-2" onclick="toggleReadonly()">
                 Habilitar Edição
             </button>
-            <a href="{{ route('usersDataFlex_list.show', $userDataFlex->user_id) }}" class="btn btn-info">Voltar Lista Perfil</a>
+            <a href="{{ route('usersDataFlex_list.show', $userDataFlex->user_id) }}" class="btn btn-info btn-md px-4 me-2">Voltar Lista Perfil</a>
         </div>
         <div class="row mb-2">
             <div>
@@ -28,11 +30,12 @@
             @csrf
             @method('PUT')
             @php
+                $nicheLevel = $userDataFlex->niche_level;
                 $data = $userDataFlex->user_profile;
                 if (is_string($data)) {
                     try { $data = json_decode($data, true); } catch (\Throwable $e) { $data = []; }
                 }
-                $nicheLevel = $userDataFlex->niche_level;
+                $iseNumber = isset($data['iseNumber']) ? $data['iseNumber'] : '0';
 
                 $certificationEFSI = isset($data['certificationEFSI']) ? $data['certificationEFSI'] : 'Ensino Fundamental Séries Iniciais de Educação de Jovens e Adultos'; 
                 $conclusionCertificationEFSI = isset($data['conclusionCertificationEFSI']) ? $data['conclusionCertificationEFSI'] : ''; 
@@ -45,22 +48,22 @@
                 $certificationEFSF = isset($data['certificationEFSF']) ? $data['certificationEFSF'] : 'Ensino Fundamental Séries Finais de Educação de Jovens e Adultos';
                 $conclusionCertificationEFSF = isset($data['conclusionCertificationEFSF']) ? $data['conclusionCertificationEFSF'] : '';
                 $ak1EFSFName = isset($data['ak1EFSFName']) ? $data['ak1EFSFName'] : 'LINGUAGENS';
-                $ak1EFSFDescription = isset($data['ak1EFSFDescription']) ? $data['ak1EFSFDescription'] : 'Descrição AK1 não cadastrada';
+                $ak1EFSFDescription = isset($data['ak1EFSFDescription']) ? $data['ak1EFSFDescription'] : 'Língua Portuguesa, Literatura, Língua Inglesa, Arte e Educação Física';
                 $ak1EFSFResult = isset($data['ak1EFSFResult']) ? $data['ak1EFSFResult'] : '';
                 $ak1EFSFConclusion = isset($data['ak1EFSFConclusion']) ? $data['ak1EFSFConclusion'] : '';
                 $ak1EFSFObs = isset($data['ak1EFSFObs']) ? $data['ak1EFSFObs'] : '';
-                $ak2EFSFName = isset($data['ak2EFSFName']) ? $data['ak2EFSFName'] : 'Nome AK2 não cadastrado';
-                $ak2EFSFDescription = isset($data['ak2EFSFDescription']) ? $data['ak2EFSFDescription'] : 'Descrição AK2 não cadastrada';
+                $ak2EFSFName = isset($data['ak2EFSFName']) ? $data['ak2EFSFName'] : 'MATEMÁTICA';
+                $ak2EFSFDescription = isset($data['ak2EFSFDescription']) ? $data['ak2EFSFDescription'] : 'Matemática';
                 $ak2EFSFResult = isset($data['ak2EFSFResult']) ? $data['ak2EFSFResult'] : '';
                 $ak2EFSFConclusion = isset($data['ak2EFSFConclusion']) ? $data['ak2EFSFConclusion'] : '';
                 $ak2EFSFObs = isset($data['ak2EFSFObs']) ? $data['ak2EFSFObs'] : '';
-                $ak3EFSFName = isset($data['ak3EFSFName']) ? $data['ak3EFSFName'] : 'Nome AK3 não cadastrado';
-                $ak3EFSFDescription = isset($data['ak3EFSFDescription']) ? $data['ak3EFSFDescription'] : 'Descrição AK3 não cadastrada';
+                $ak3EFSFName = isset($data['ak3EFSFName']) ? $data['ak3EFSFName'] : 'CIÊNCIAS DA NATUREZA';
+                $ak3EFSFDescription = isset($data['ak3EFSFDescription']) ? $data['ak3EFSFDescription'] : 'Ciências';
                 $ak3EFSFResult = isset($data['ak3EFSFResult']) ? $data['ak3EFSFResult'] : '';
                 $ak3EFSFConclusion = isset($data['ak3EFSFConclusion']) ? $data['ak3EFSFConclusion'] : '';
                 $ak3EFSFObs = isset($data['ak3EFSFObs']) ? $data['ak3EFSFObs'] : '';
-                $ak4EFSFName = isset($data['ak4EFSFName']) ? $data['ak4EFSFName'] : 'Nome AK4 não cadastrado';
-                $ak4EFSFDescription = isset($data['ak4EFSFDescription']) ? $data['ak4EFSFDescription'] : 'Descrição AK4 não cadastrada';
+                $ak4EFSFName = isset($data['ak4EFSFName']) ? $data['ak4EFSFName'] : 'CIÊNCIAS HUMANAS';
+                $ak4EFSFDescription = isset($data['ak4EFSFDescription']) ? $data['ak4EFSFDescription'] : 'História, Geografia';
                 $ak4EFSFResult = isset($data['ak4EFSFResult']) ? $data['ak4EFSFResult'] : '';
                 $ak4EFSFConclusion = isset($data['ak4EFSFConclusion']) ? $data['ak4EFSFConclusion'] : '';
                 $ak4EFSFObs = isset($data['ak4EFSFObs']) ? $data['ak4EFSFObs'] : '';
@@ -68,27 +71,29 @@
                 $certificationEMAF = isset($data['certificationEMAF']) ? $data['certificationEMAF'] : 'Ensino Médio de Educação de Jovens e Adultos';
                 $conclusionCertificationEMAF = isset($data['conclusionCertificationEMAF']) ? $data['conclusionCertificationEMAF'] : '';
                 $ak1EMAFName = isset($data['ak1EMAFName']) ? $data['ak1EMAFName'] : 'LINGUAGENS E SUAS TECNOLOGIAS';
-                $ak1EMAFDescription = isset($data['ak1EMAFDescription']) ? $data['ak1EMAFDescription'] : 'Descrição AK1 não cadastrada';
+                $ak1EMAFDescription = isset($data['ak1EMAFDescription']) ? $data['ak1EMAFDescription'] : 'Língua Portuguesa, Literatura, Língua Espanhola, Língua Inglesa, Arte e Educação Física';
                 $ak1EMAFResult = isset($data['ak1EMAFResult']) ? $data['ak1EMAFResult'] : '';
                 $ak1EMAFConclusion = isset($data['ak1EMAFConclusion']) ? $data['ak1EMAFConclusion'] : '';
                 $ak1EMAFObs = isset($data['ak1EMAFObs']) ? $data['ak1EMAFObs'] : '';
-                $ak2EMAFName = isset($data['ak2EMAFName']) ? $data['ak2EMAFName'] : 'Nome AK2 não cadastrado';
-                $ak2EMAFDescription = isset($data['ak2EMAFDescription']) ? $data['ak2EMAFDescription'] : 'Descrição AK2 não cadastrada';
+                $ak2EMAFName = isset($data['ak2EMAFName']) ? $data['ak2EMAFName'] : 'MATEMÁTICA E SUAS TECNOLOGIAS';
+                $ak2EMAFDescription = isset($data['ak2EMAFDescription']) ? $data['ak2EMAFDescription'] : 'Matemática';
                 $ak2EMAFResult = isset($data['ak2EMAFResult']) ? $data['ak2EMAFResult'] : '';
                 $ak2EMAFConclusion = isset($data['ak2EMAFConclusion']) ? $data['ak2EMAFConclusion'] : '';
                 $ak2EMAFObs = isset($data['ak2EMAFObs']) ? $data['ak2EMAFObs'] : 'Observação AK2 não cadastrada';
-                $ak3EMAFName = isset($data['ak3EMAFName']) ? $data['ak3EMAFName'] : 'Nome AK3 não cadastrado';
-                $ak3EMAFDescription = isset($data['ak3EMAFDescription']) ? $data['ak3EMAFDescription'] : 'Descrição AK3 não cadastrada';
+                $ak3EMAFName = isset($data['ak3EMAFName']) ? $data['ak3EMAFName'] : 'CIÊNCIAS DA NATUREZA E SUAS TECNOLOGIAS';
+                $ak3EMAFDescription = isset($data['ak3EMAFDescription']) ? $data['ak3EMAFDescription'] : 'Física, Química e Biologia';
                 $ak3EMAFResult = isset($data['ak3EMAFResult']) ? $data['ak3EMAFResult'] : 'Resultado AK3 não cadastrado';        
                 $ak3EMAFConclusion = isset($data['ak3EMAFConclusion']) ? $data['ak3EMAFConclusion'] : 'Conclusão AK3 não cadastrada';
                 $ak3EMAFObs = isset($data['ak3EMAFObs']) ? $data['ak3EMAFObs'] : 'Observação AK3 não cadastrada';
-                $ak4EMAFName = isset($data['ak4EMAFName']) ? $data['ak4EMAFName'] : 'Nome AK4 não cadastrado';
-                $ak4EMAFDescription = isset($data['ak4EMAFDescription']) ? $data['ak4EMAFDescription'] : 'Descrição AK4 não cadastrada';
+                $ak4EMAFName = isset($data['ak4EMAFName']) ? $data['ak4EMAFName'] : 'CIÊNCIAS HUMANAS E SUAS TECNOLOGIAS';
+                $ak4EMAFDescription = isset($data['ak4EMAFDescription']) ? $data['ak4EMAFDescription'] : 'História, Geografia, Sociologia e Filosofia';
                 $ak4EMAFResult = isset($data['ak4EMAFResult']) ? $data['ak4EMAFResult'] : 'Resultado AK4 não cadastrado';
                 $ak4EMAFConclusion = isset($data['ak4EMAFConclusion']) ? $data['ak4EMAFConclusion'] : 'Conclusão AK4 não cadastrada';
                 $ak4EMAFObs = isset($data['ak4EMAFObs']) ? $data['ak4EMAFObs'] : 'Observação AK4 não cadastrada';
 
                 $nicheLevel = old('niche_level', $userDataFlex->niche_level ?? 0);
+
+                $iseNumber = old('iseNumber', $data['iseNumber'] ?? '0');
 
                 $certificationEFSI = old('certificationEFSI', $data['certificationEFSI'] ?? 'Ensino Fundamental Séries Iniciais de Educação de Jovens e Adultos');
                 $conclusionCertificationEFSI = old('conclusionCertificationEFSI', $data['conclusionCertificationEFSI'] ?? '');
@@ -101,7 +106,7 @@
                 $certificationEFSF = old('certificationEFSF', $data['certificationEFSF'] ?? 'Ensino Fundamental Séries Finais de Educação de Jovens e Adultos');
                 $conclusionCertificationEFSF = old('conclusionCertificationEFSF', $data['conclusionCertificationEFSF'] ?? '');
                 $ak1EFSFName = old('ak1EFSFName', $data['ak1EFSFName'] ?? 'LINGUAGENS');
-                $ak1EFSFDescription = old('ak1EFSFDescription', $data['ak1EFSFDescription'] ?? 'Língua Portuguesa, Literatura, Língua Espanhola, Língua Inglesa, Arte e Educação Física');
+                $ak1EFSFDescription = old('ak1EFSFDescription', $data['ak1EFSFDescription'] ?? 'Língua Portuguesa, Literatura, Língua Inglesa, Arte e Educação Física');
                 $ak1EFSFResult = old('ak1EFSFResult', $data['ak1EFSFResult'] ?? '');
                 $ak1EFSFConclusion = old('ak1EFSFConclusion', $data['ak1EFSFConclusion'] ?? '');
                 $ak1EFSFObs = old('ak1EFSFObs', $data['ak1EFSFObs'] ?? '');
@@ -111,12 +116,12 @@
                 $ak2EFSFConclusion = old('ak2EFSFConclusion', $data['ak2EFSFConclusion'] ?? '');
                 $ak2EFSFObs = old('ak2EFSFObs', $data['ak2EFSFObs'] ?? '');
                 $ak3EFSFName = old('ak3EFSFName', $data['ak3EFSFName'] ?? 'CIÊNCIAS DA NATUREZA');
-                $ak3EFSFDescription = old('ak3EFSFDescription', $data['ak3EFSFDescription'] ?? 'Física, Química e Biologia');
+                $ak3EFSFDescription = old('ak3EFSFDescription', $data['ak3EFSFDescription'] ?? 'Ciências');
                 $ak3EFSFResult = old('ak3EFSFResult', $data['ak3EFSFResult'] ?? '');
                 $ak3EFSFConclusion = old('ak3EFSFConclusion', $data['ak3EFSFConclusion'] ?? '');
                 $ak3EFSFObs = old('ak3EFSFObs', $data['ak3EFSFObs'] ?? '');
                 $ak4EFSFName = old('ak4EFSFName', $data['ak4EFSFName'] ?? 'CIÊNCIAS HUMANAS');
-                $ak4EFSFDescription = old('ak4EFSFDescription', $data['ak4EFSFDescription'] ?? 'Geografia, História, Sociologia e Filosofia');
+                $ak4EFSFDescription = old('ak4EFSFDescription', $data['ak4EFSFDescription'] ?? 'Geografia, História');
                 $ak4EFSFResult = old('ak4EFSFResult', $data['ak4EFSFResult'] ?? '');
                 $ak4EFSFConclusion = old('ak4EFSFConclusion', $data['ak4EFSFConclusion'] ?? '');
                 $ak4EFSFObs = old('ak4EFSFObs', $data['ak4EFSFObs'] ?? '');
@@ -148,8 +153,13 @@
                 <hr style="margin:8px 0; opacity:.3;">
             </div>
             <div class="row mb-2">
-                <label  class="col-sm-4 col-form-label" for="nicheLevel"><strong>Nível de Nicho:</strong></label>
-                <div class="col-sm-8">
+                <label  class="col-sm-4 col-form-label" for="iseNumber"><strong>*Número do ISE:</strong></label>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control readonly-field bg-info text-white" id="iseNumber" name="iseNumber" value="{{ old('iseNumber', $iseNumber) }}" readonly required autofocus>
+                </div>
+                <label  class="col-sm-2 col-form-label"></label>
+                <label  class="col-sm-2 col-form-label" for="nicheLevel"><strong>Nível de Nicho:</strong></label>
+                <div class="col-sm-2">
                     <input type="text" class="form-control readonly-field bg-info text-white" id="nicheLevel" name="nicheLevel" value="{{ old('nicheLevel', $nicheLevel) }}" readonly required autofocus>
                 </div>
             </div>

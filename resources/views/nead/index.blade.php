@@ -14,7 +14,7 @@
                         </h5>
                         <p class="lead mb-4">Aqui, respeitamos o seu tempo e valorizamos a sua história.<br> 
                             Transforme a sua vida e conquiste novas oportunidades profissionais através dos estudos.</p>
-                        <a href="#matricula" class="btn btn-warning btn-lg fw-bold px-4 me-2">Quero Estudar</a>
+                        <a href="#mamtricula" class="btn btn-warning btn-lg fw-bold px-4 me-2">Quero Estudar</a>
                         <a href="#sobre" class="btn btn-outline-light btn-lg px-4">Conhecer a Escola</a>
                     </div>
                 </div>

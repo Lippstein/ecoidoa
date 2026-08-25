@@ -28,6 +28,7 @@ class UsersDataFlexController extends Controller
      */
     public function saveHabitatsNiches(Request $request)
     { 
+        //Pegar todos os convites existentes no banco de dados no caso de escolher o habitat rateio
         $cvt = UsersDataFlex::select('user_id', 'user_profile')
             ->get()
             ->map(function ($row) {
@@ -49,6 +50,9 @@ class UsersDataFlexController extends Controller
                 ];
             })
             ->toArray();
+
+
+        // dd($cvt); // Debug: Exibe os convites existentes no banco de dados
 
         $data = json_decode($request->input('u_n_h_id'), true);
         $n_id = $data['n_id'];
@@ -96,9 +100,16 @@ class UsersDataFlexController extends Controller
         $userDataFlex->user_id = Auth::id();
         $userDataFlex->niche_id = $nicheId;
         $userDataFlex->habitat_id = $habitatId;
-        $userDataFlex->user_profile = [
-            'invited_by' => $inviteOfUser,
-        ];
+        if ($nicheId == 3 || $nicheId == 4) {
+            $userDataFlex->user_profile = [
+                'invited_by' => $inviteOfUser,
+            ];
+        }
+        if ($nicheId == 1 || $nicheId == 2) {
+            $userDataFlex->user_profile = [
+                'iseNumber' => '0',
+            ];
+        }
         $userDataFlex->save();
         event(new Registered(Auth::user()));
         return redirect()->route('dashboard')
@@ -134,7 +145,7 @@ class UsersDataFlexController extends Controller
      */
     public function updateUsersDataFlexForm(Request $request, $id)
     {
-        if (now('America/Sao_Paulo')->hour > 19 && now('America/Sao_Paulo')->hour < 22) {
+        if (now('America/Sao_Paulo')->hour > 18 && now('America/Sao_Paulo')->hour < 23) {
             return redirect()->back()
                 ->with('status', 'O sistema de atualização de perfil NÃO está disponível entre 19h e 22h.');
         }
@@ -143,7 +154,8 @@ class UsersDataFlexController extends Controller
         $idNiche = $userDataFlex->niche_id;
         if($idNiche == 1) {
             $validated = $request->validate([
-                    'nicheLevel' => 'nullable|integer|min:0|max:9',
+                    'iseNumber' => 'nullable|integer|min:0|max:99999999',
+                    'nicheLevel' => 'nullable|integer|in:0,' . $idNiche . '',
                     'certificationEFSI' => 'required|string|max:150',
                     'conclusionCertificationEFSI' => ['nullable', 'string', 'regex:/^(?:19\d{2}|20\d{2}|Cursando)$/'],
                     'ak1EFSIName' => 'required|string|max:150',
@@ -246,7 +258,6 @@ class UsersDataFlexController extends Controller
                 $updatedProfile[$key] = $value;
             }
         }
-
         if ($request->filled('nicheLevel')) {
             $userDataFlex->niche_level = (int) $request->input('nicheLevel');
         }
@@ -271,7 +282,6 @@ class UsersDataFlexController extends Controller
             ->paginate(10);
         $niche = $profiles->first()->niche;
         return view("usersDataFlex.usersDataFlex_list", compact('profiles', 'user_id', 'name', 'user'));
-        // return view("usersDataFlex.niche_{$niche->id}.usersDataFlex_list", compact('profiles', 'user_id', 'name', 'user'));
     }
 
     /**

@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UsersDataFlex\UsersDataFlexController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Controllers\Habitats\HabitatController;
@@ -14,28 +15,6 @@ use App\Http\Controllers\Niches\NicheController;
 use App\Http\Controllers\Terms\TesauroController;
 use App\Models\Habitat;
 use App\Http\Controllers\PdfController;
-
-
-$renderSubdomainView = function (string $subdominio) {
-    $viewName = $subdominio . '.show'; // ex: darcyvargas.show
-
-    if (!View::exists($viewName)) {
-        abort(404, 'View nao encontrada para este subdominio.');
-    }
-
-    return view($viewName, [
-        'subdominio' => $subdominio,
-    ]);
-};
-
-Route::domain('{subdominio}.idoa.com.br')->group(function () use ($renderSubdomainView) {
-    Route::get('/', $renderSubdomainView)->name('subdomain.show');
-});
-
-// Suporte para teste local com hosts apontando para *.localhost
-Route::domain('{subdominio}.localhost')->group(function () use ($renderSubdomainView) {
-    Route::get('/', $renderSubdomainView);
-});
 
 
 // Formulário de login
@@ -73,11 +52,7 @@ Route::view('/darcyvargas', 'darcyvargas.index')->name('darcyvargas.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Rota de dashboard protegida
-    Route::get('/dashboard', function () {
-        $userId = Auth::user()->id;
-        $usersDataFlexList = \App\Models\UsersDataFlex::where('user_id', $userId)->get();
-    return view('dashboard', compact('usersDataFlexList'));
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
 
     // Formulário de escolha de nicho
     Route::get('/habitats_niches', [UsersDataFlexController::class, 'showHabitatsNichesForm'])->name('habitats_niches.show');
@@ -88,7 +63,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/users/users_create', [UserController::class, 'storeUsersForm'])->name('users_create.store');
     Route::get('/users/users_show/{id}', [UserController::class, 'showUsersForm'])->name('users_show.show');
     Route::get('/users/users_edit/{id}', [UserController::class, 'editUsersForm'])->name('users_edit.show');
+    Route::get('/users/users_edit_neejacpdv/{id}/{niche_id}', [UserController::class, 'editUsersEnrollmentForm'])->name('users_edit_neejacpdv.show');
     Route::put('/users/users_update/{id}', [UserController::class, 'updateUsersForm'])->name('users_update.show');
+    Route::put('/users/users_update_neejacpdv/{id}/{niche_id}', [UserController::class, 'updateUsersEnrollmentForm'])->name('users_update_neejacpdv.show');
     Route::delete('/users/users_destroy/{id}', [UserController::class, 'destroyUsersForm'])->name('users_destroy.show');
 
     Route::get('/habitats/habitats_list', [HabitatController::class, 'listHabitatsForm'])->name('habitats_list.show');
@@ -114,6 +91,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/usersDataFlex/usersDataFlex_destroy/{id}', [UsersDataFlexController::class, 'destroyUsersDataFlexForm'])->name('usersDataFlex_destroy.show');
     Route::put('/usersDataFlex/usersDataFlex_update/{id}', [UsersDataFlexController::class, 'updateUsersDataFlexForm'])->name('usersDataFlex_update.show');
     Route::get('/pdf_historico/{id}/{nivelEnsino}', [PdfController::class, 'historico'])->name('pdf.historico');
+    Route::get('/pdf_boletim/{id}/{nivelEnsino}', [PdfController::class, 'boletim'])->name('pdf.boletim');
     
     Route::match(['get', 'post'], '/tesauro/tesauro_list', [TesauroController::class, 'listTesauroForm'])->name('tesauro_list.show');
     Route::get('/tesauro/tesauro_filter', [TesauroController::class, 'filterTesauroForm'])->name('tesauro_filter.show');

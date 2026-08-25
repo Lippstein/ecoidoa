@@ -1,5 +1,5 @@
 @extends("layouts.app")
-@section('title', 'Usuário - Idoa')
+{{-- @section('title', 'Usuário - Idoa') --}}
 @section("content")
 <div class="container">
     <div class="py-2 mb-4 rounded">
@@ -13,7 +13,7 @@
             Perfil (ID): <strong> {{ $userDataFlex->id }} </strong> - Habitat_ID: <strong> {{ $userDataFlex->habitat_id }} </strong> - Niche_ID: <strong> {{ $userDataFlex->niche_id }} </strong>
         </div>        
         <div>
-            Nome do Usuário: <strong>{{ $user->name }}</strong> - User_ID: <strong> {{ $userDataFlex->user_id }} </strong>
+            {{-- Nome do Usuário: <strong>{{ $user->name }}</strong> - User_ID: <strong> {{ $userDataFlex->user_id }} </strong> --}}
         </div>
         <div>
             Data de Cadastro:<strong>{{ \Carbon\Carbon::parse($userDataFlex->created_at)->format('d/m/Y H:i:s') }}</strong>
@@ -79,6 +79,18 @@
         $ak4EMAFConclusion = isset($data['ak4EMAFConclusion']) ? $data['ak4EMAFConclusion'] : 'Conclusão AK4 não cadastrada';
         $ak4EMAFObs = isset($data['ak4EMAFObs']) ? $data['ak4EMAFObs'] : 'Observação AK4 não cadastrada';
 
+        // $street = isset($data['street']) ? $data['street'] : 'Rua não cadastrada';
+        // $number = isset($data['number']) ? $data['number'] : 'Número não cadastrado';
+        // $city = isset($data['city']) ? $data['city'] : 'Cidade não cadastrada';
+        // $state = isset($data['state']) ? $data['state'] : 'Estado não cadastrado';
+        // $zip = isset($data['zip']) ? $data['zip'] : 'CEP não cadastrado';
+        // $country = isset($data['country']) ? $data['country'] : 'Brasil';
+        // $cellphone = isset($data['cellphone']) ? $data['cellphone'] : 'Celular não cadastrado';
+        // $phone = isset($data['phone']) ? $data['phone'] : 'Telefone não cadastrado';
+        // $whatsapp = isset($data['whatsapp']) ? $data['whatsapp'] : 'WhatsApp não cadastrado';
+        // $telegram = isset($data['telegram']) ? $data['telegram'] : 'Telegram não cadastrado';
+        // $facebook = isset($data['facebook']) ? $data['facebook'] : 'Facebook não cadastrado';
+        // $instagram = isset($data['instagram']) ? $data['instagram'] : 'Instagram não cadastrado';
     @endphp
     <div class="py-2 mb-4 rounded">
         <h6 class="text-center">Perfil do Usuário</h6>
@@ -93,13 +105,10 @@
                     <th colspan="1" class="text-center bg-info text-white">Conclusão</th>
                 </tr>
                 <tr>
-                    <td colspan="3" style="padding: 8px;"><strong>{{ $certificationEFSI }}</strong></td>
-                    <td colspan="1" style="padding: 8px; text-align: right;">{{ $conclusionCertificationEFSI }}
-                       <a href="{{ route('pdf.boletim', ['id' => $userDataFlex->id, 'nivelEnsino' => 'EFSI']) }}" target="_blank" class="btn btn-warning">Boletim</a>
+                    <td colspan="3" style="padding: 8px;">{{ $certificationEFSI }}</td>
+                    <td colspan="1" style="padding: 8px;">{{ $conclusionCertificationEFSI }}
                         @if($conclusionCertificationEFSI != "Cursando")
-                            <a href="{{ route('pdf.historico', ['id' => $userDataFlex->id, 'nivelEnsino' => 'EFSI']) }}" target="_blank" class="btn btn-warning">Histórico</a>
-                        @else
-                            <a href="{{ route('pdf.historico', ['id' => $userDataFlex->id, 'nivelEnsino' => 'EFSI']) }}" target="_blank" class="btn btn-warning">Histórico Parcial</a>
+                            <a href="{{ route('pdf.historico', ['id' => $userDataFlex->id, 'nivelEnsino' => 'EFSI']) }}" class="btn btn-warning">Histórico</a>
                         @endif
                     </td>
                 </tr>
@@ -115,7 +124,7 @@
             </thead>
             <tbody>
                 <tr>
-                    <td style="padding: 8px;"><strong>{{ $ak1EFSIName}}</strong><BR><small>{{ $ak1EFSIDescription }}</small></td>
+                    <td style="padding: 8px;">{{ $ak1EFSIName}}<BR><small>{{ $ak1EFSIDescription }}</small></td>
                     <td style="padding: 8px;">{{ $ak1EFSIResult }}</td>
                     <td style="padding: 8px;">{{ $ak1EFSIConclusion }}</td>
                     <td style="padding: 8px;"><small>{{ $ak1EFSIObs }}</small></td>
@@ -132,14 +141,11 @@
                     <th colspan="1" class="text-center bg-primary text-white">Conclusão</th>
                 </tr>
                 <tr>
-                    <td colspan="2" style="padding: 8px;"><strong>{{ $certificationEFSF }}</strong></td>
-                    <td colspan="21" style="padding: 8px; text-align: right;">{{ $conclusionCertificationEFSF }}
-                        <a href="{{ route('pdf.boletim', ['id' => $userDataFlex->id, 'nivelEnsino' => 'EFSF']) }}" target="_blank" class="btn btn-warning">Boletim</a>
+                    <td colspan="3" style="padding: 8px;">{{ $certificationEFSF }}</td>
+                    <td colspan="1" style="padding: 8px;">{{ $conclusionCertificationEFSF }}
                         @if($conclusionCertificationEFSF != "Cursando")
-                            <a href="{{ route('pdf.historico', ['id' => $userDataFlex->id, 'nivelEnsino' => 'EFSF']) }}" target="_blank" class="btn btn-warning">Histórico</a>
-                        @else
-                            <a href="{{ route('pdf.historico', ['id' => $userDataFlex->id, 'nivelEnsino' => 'EFSF']) }}" target="_blank" class="btn btn-warning">Histórico Parcial</a>
-                        @endif 
+                            <a href="{{ route('pdf.historico', ['id' => $userDataFlex->id, 'nivelEnsino' => 'EFSF']) }}" class="btn btn-warning">Histórico</a>
+                        @endif                    
                     </td>
                 </tr>
                 <tr>
@@ -154,25 +160,25 @@
             </thead>
             <tbody>
                 <tr>
-                    <td style="padding: 8px;"><strong>{{ $ak1EFSFName}}</strong><BR><small>{{ $ak1EFSFDescription }}</small></td>
+                    <td style="padding: 8px;">{{ $ak1EFSFName}}<BR><small>{{ $ak1EFSFDescription }}</small></td>
                     <td style="padding: 8px;">{{ $ak1EFSFResult }}</td>
                     <td style="padding: 8px;">{{ $ak1EFSFConclusion }}</td>
                     <td style="padding: 8px;"><small>{{ $ak1EFSFObs }}</small></td>
                 </tr>
                 <tr>
-                    <td style="padding: 8px;"><strong>{{ $ak2EFSFName }}</strong><BR><small>{{ $ak2EFSFDescription }}</small></td>
+                    <td style="padding: 8px;">{{ $ak2EFSFName }}<BR><small>{{ $ak2EFSFDescription }}</small></td>
                     <td style="padding: 8px;">{{ $ak2EFSFResult }}</td>
                     <td style="padding: 8px;">{{ $ak2EFSFConclusion }}</td>
                     <td style="padding: 8px;"><small>{{ $ak2EFSFObs }}</small></td>
                 </tr>
                 <tr>
-                    <td style="padding: 8px;"><strong>{{ $ak3EFSFName }}</strong><BR><small>{{ $ak3EFSFDescription }}</small></td>
+                    <td style="padding: 8px;">{{ $ak3EFSFName }}<BR><small>{{ $ak3EFSFDescription }}</small></td>
                     <td style="padding: 8px;">{{ $ak3EFSFResult }}</td>
                     <td style="padding: 8px;">{{ $ak3EFSFConclusion }}</td>
                     <td style="padding: 8px;"><small>{{ $ak3EFSFObs }}</small></td>
                 </tr>
                 <tr>
-                    <td style="padding: 8px;"><strong>{{ $ak4EFSFName }}</strong><BR><small>{{ $ak4EFSFDescription }}</small></td>
+                    <td style="padding: 8px;">{{ $ak4EFSFName }}<BR><small>{{ $ak4EFSFDescription }}</small></td>
                     <td style="padding: 8px;">{{ $ak4EFSFResult }}</td>
                     <td style="padding: 8px;">{{ $ak4EFSFConclusion }}</td>
                     <td style="padding: 8px;"><small>{{ $ak4EFSFObs }}</small></td>
@@ -182,19 +188,16 @@
     </div>
     <div class="row mb-2">
         <table border="1" style="width: 100%; border-collapse: collapse;">
-            <thead>
+            <thead
                 <tr>
                     <th colspan="3" class="text-center bg-success text-white">Certificação</th>
                     <th colspan="1" class="text-center bg-success text-white">Conclusão</th>
                 </tr>
                 <tr>
-                    <td colspan="2" style="padding: 8px;"><strong>{{ $certificationEMAF }}</strong></td>
-                    <td colspan="2" style="padding: 8px; text-align: right;">{{ $conclusionCertificationEMAF }}
-                        <a href="{{ route('pdf.boletim', ['id' => $userDataFlex->id, 'nivelEnsino' => 'EMAF']) }}" target="_blank" class="btn btn-warning">Boletim</a>
+                    <td colspan="3" style="padding: 8px;">{{ $certificationEMAF }}</td>
+                    <td colspan="1" style="padding: 8px;">{{ $conclusionCertificationEMAF }}
                         @if($conclusionCertificationEMAF != "Cursando")
-                            <a href="{{ route('pdf.historico', ['id' => $userDataFlex->id, 'nivelEnsino' => 'EMAF']) }}" target="_blank" class="btn btn-warning">Histórico</a>
-                        @else
-                            <a href="{{ route('pdf.historico', ['id' => $userDataFlex->id, 'nivelEnsino' => 'EMAF']) }}" target="_blank" class="btn btn-warning">Histórico Parcial</a>
+                            <a href="{{ route('pdf.historico', ['id' => $userDataFlex->id, 'nivelEnsino' => 'EMAF']) }}" class="btn btn-warning">Histórico</a>
                         @endif
                     </td>
                 </tr>
@@ -210,25 +213,25 @@
             </thead>
             <tbody>
                 <tr>
-                    <td style="padding: 8px;"><strong>{{ $ak1EMAFName}}</strong><BR><small>{{ $ak1EMAFDescription }}</small></td>
+                    <td style="padding: 8px;">{{ $ak1EMAFName}}<BR><small>{{ $ak1EMAFDescription }}</small></td>
                     <td style="padding: 8px;">{{ $ak1EMAFResult }}</td>
                     <td style="padding: 8px;">{{ $ak1EMAFConclusion }}</td>
                     <td style="padding: 8px;"><small>{{ $ak1EMAFObs }}</small></td>
                 </tr>
                 <tr>
-                    <td style="padding: 8px;"><strong>{{ $ak2EMAFName }}</strong><BR><small>{{ $ak2EMAFDescription }}</small></td>
+                    <td style="padding: 8px;">{{ $ak2EMAFName }}<BR><small>{{ $ak2EMAFDescription }}</small></td>
                     <td style="padding: 8px;">{{ $ak2EMAFResult }}</td>
                     <td style="padding: 8px;">{{ $ak2EMAFConclusion }}</td>
                     <td style="padding: 8px;"><small>{{ $ak2EMAFObs }}</small></td>
                 </tr>
                 <tr>
-                    <td style="padding: 8px;"><strong>{{ $ak3EMAFName }}</strong><BR><small>{{ $ak3EMAFDescription }}</small></td>
+                    <td style="padding: 8px;">{{ $ak3EMAFName }}<BR><small>{{ $ak3EMAFDescription }}</small></td>
                     <td style="padding: 8px;">{{ $ak3EMAFResult }}</td>
                     <td style="padding: 8px;">{{ $ak3EMAFConclusion }}</td>
                     <td style="padding: 8px;"><small>{{ $ak3EMAFObs }}</small></td>
                 </tr>
                 <tr>
-                    <td style="padding: 8px;"><strong>{{ $ak4EMAFName }}</strong><BR><small>{{ $ak4EMAFDescription }}</small></td>
+                    <td style="padding: 8px;">{{ $ak4EMAFName }}<BR><small>{{ $ak4EMAFDescription }}</small></td>
                     <td style="padding: 8px;">{{ $ak4EMAFResult }}</td>
                     <td style="padding: 8px;">{{ $ak4EMAFConclusion }}</td>
                     <td style="padding: 8px;"><small>{{ $ak4EMAFObs }}</small></td>
